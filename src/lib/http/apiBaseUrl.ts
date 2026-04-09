@@ -1,4 +1,5 @@
 const DEFAULT_PRODUCTION_API_BASE_URL = "https://simcorex-back-end.onrender.com";
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1"]);
 
 function normalizeApiBaseUrl(value: string) {
   return value.endsWith("/") ? value.slice(0, -1) : value;
@@ -11,13 +12,9 @@ export function getApiBaseUrl() {
     return normalizeApiBaseUrl(configuredApiBaseUrl);
   }
 
-  if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  if (typeof window !== "undefined" && LOCAL_HOSTNAMES.has(window.location.hostname)) {
     return "";
   }
 
-  if (process.env.NODE_ENV === "production") {
-    return DEFAULT_PRODUCTION_API_BASE_URL;
-  }
-
-  return "";
+  return DEFAULT_PRODUCTION_API_BASE_URL;
 }

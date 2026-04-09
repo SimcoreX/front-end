@@ -43,6 +43,7 @@ NEXT_PUBLIC_API_BASE_URL=https://simcorex-back-end.onrender.com
 ```
 
 If this variable is not set in production, the app falls back to `https://simcorex-back-end.onrender.com` automatically.
+Also, `netlify.toml` includes a redirect from `/api/v1/*` to the same Render backend as a deployment fallback.
 
 If the Twelve Data key is missing or rate-limited, the Markets page automatically falls back to mock candles for frontend testing.
 If the GNews key is missing or unavailable, the News page automatically falls back to local mock news with pagination.
