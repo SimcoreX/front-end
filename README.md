@@ -23,12 +23,26 @@ Create a `.env.local` file at the project root:
 ```bash
 NEXT_PUBLIC_TWELVE_DATA_API_KEY=your_twelve_data_key
 NEXT_PUBLIC_GNEWS_API_KEY=your_gnews_key
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_API_BASE_URL=
 ```
 
 - `NEXT_PUBLIC_TWELVE_DATA_API_KEY`: enables real market candles in the Markets page.
 - `NEXT_PUBLIC_GNEWS_API_KEY`: enables live global financial news in the News page (10 items per page).
-- `NEXT_PUBLIC_API_BASE_URL`: backend base URL used to send trade operations (`POST /trades/operations`).
+- `NEXT_PUBLIC_API_BASE_URL`: backend base URL used by the frontend API client.
+
+### Local development
+
+Keep `NEXT_PUBLIC_API_BASE_URL` empty to use the Next.js development rewrite from `/api/v1/*` to `http://localhost:3000/api/v1/*`.
+
+### Netlify deployment
+
+In Netlify, set this environment variable for Production (and Deploy Previews if desired):
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=https://simcorex-back-end.onrender.com
+```
+
+If this variable is not set in production, the app falls back to `https://simcorex-back-end.onrender.com` automatically.
 
 If the Twelve Data key is missing or rate-limited, the Markets page automatically falls back to mock candles for frontend testing.
 If the GNews key is missing or unavailable, the News page automatically falls back to local mock news with pagination.
