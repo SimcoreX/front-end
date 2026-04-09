@@ -1,0 +1,429 @@
+{
+  "app": {
+    "name": "SIMCOREX",
+    "tagline": "Negocie com clareza"
+  },
+  "auth": {
+    "title": "Entrar",
+    "subtitle": "Acesse seu painel",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "voce@simcorex.com",
+    "passwordLabel": "Senha",
+    "passwordPlaceholder": "Sua senha segura",
+    "cta": "Entrar",
+    "loading": "Entrando..."
+    ,
+    "errors": {
+      "invalidCredentials": "E-mail ou senha incorretos.",
+      "unauthorized": "Sua sessão expirou. Faça login novamente.",
+      "generic": "Não foi possível autenticar agora. Tente novamente.",
+      "serviceUnavailable": "Não foi possível conectar ao servidor. Verifique sua conexão e a URL da API.",
+      "statusDetail": "Status: {{statusCode}} · Código: {{code}}"
+    }
+  },
+  "nav": {
+    "dashboard": "Painel",
+    "trades": "Mercados",
+    "history": "Histórico",
+    "news": "Notícias",
+    "logout": "Sair",
+    "language": "Idioma",
+    "profile": "Perfil"
+  },
+  "history": {
+    "title": "Histórico",
+    "overview": "Análise consolidada",
+    "filtersTitle": "Filtros de performance e período",
+    "loading": "Carregando dados do histórico...",
+    "errors": {
+      "loadFailed": "Não foi possível carregar o histórico agora."
+    },
+    "calendar": {
+      "open": "Calendário de trades",
+      "title": "Calendário mensal de trades",
+      "close": "Fechar",
+      "prev": "Anterior",
+      "next": "Próximo",
+      "details": "Detalhes do dia",
+      "trades": "Trades: {{count}}",
+      "wins": "Wins: {{count}}",
+      "losses": "Losses: {{count}}",
+      "winDay": "Dia positivo",
+      "lossDay": "Dia negativo",
+      "noTrades": "Sem trades nesta data."
+    },
+    "filters": {
+      "all": "Todos",
+      "best": "Melhores trades",
+      "worst": "Piores trades",
+      "clear": "Limpar filtros"
+    },
+    "fields": {
+      "dateFrom": "Data inicial",
+      "dateTo": "Data final",
+      "topPerformance": "Top por performance",
+      "symbol": "Ativo",
+      "session": "Sessão"
+    },
+    "options": {
+      "select": "Selecione...",
+      "top10": "Top 10",
+      "top20": "Top 20",
+      "top50": "Top 50",
+      "eurusd": "EURUSD",
+      "btcusd": "BTCUSD",
+      "nasdaq": "NASDAQ",
+      "asia": "Ásia",
+      "london": "Londres",
+      "ny": "Nova York"
+    },
+    "summary": {
+      "filteredTrades": "Trades filtrados",
+      "totalPnl": "PnL total",
+      "winRate": "Win rate",
+      "avgTrade": "Média por trade"
+    },
+    "hints": {
+      "baseCurrent": "Base atual",
+      "period": "Período",
+      "average": "Média",
+      "perTrade": "Por operação"
+    },
+    "charts": {
+      "pnlCumulative": "PnL acumulado",
+      "performanceDaily": "Performance diária",
+      "tradesPerDay": "Trades por dia",
+      "tradesVolume": "Volume de operações",
+      "winRateDaily": "Win rate diário",
+      "consistency": "Consistência",
+      "avgPnlDaily": "PnL médio por dia",
+      "effectiveness": "Efetividade",
+      "filteredData": "Dados filtrados"
+    }
+  },
+  "trades": {
+    "fields": {
+      "market": "Mercado",
+      "interval": "Intervalo",
+      "side": "Lado",
+      "quantity": "Quantidade",
+      "entryPrice": "Preço de entrada",
+      "stopLossOptional": "Stop Loss (opcional)",
+      "takeProfitOptional": "Take Profit (opcional)"
+    },
+    "metrics": {
+      "currentPrice": "Preço atual",
+      "variation": "Variação",
+      "high": "Máxima",
+      "low": "Mínima",
+      "openPositions": "Posições abertas",
+      "exposure": "Exposição",
+      "openPnl": "PnL aberto"
+    },
+    "panel": {
+      "backendIntegration": "Integração backend",
+      "operationsPanel": "Painel de operações"
+    },
+    "actions": {
+      "refresh": "Atualizar",
+      "theaterMode": "Modo Theater",
+      "marketBuy": "Market Buy",
+      "marketSell": "Market Sell",
+      "openOperation": "Abrir operação",
+      "closeAll": "Fechar todas ({{count}})",
+      "close": "Fechar",
+      "closeTheater": "Sair do theater"
+    },
+    "source": {
+      "label": "Fonte",
+      "twelveData": "Twelve Data",
+      "mockLocal": "Mock local",
+      "mockFallback": "Usando dados de mercado mock"
+    },
+    "messages": {
+      "invalidQuantity": "Quantidade inválida",
+      "invalidEntry": "Preço de entrada inválido",
+      "openedBackend": "Operação aberta ({{side}}) · backend {{status}}",
+      "openedLocal": "Operação aberta localmente ({{side}})",
+      "payloadPrepared": "Payload preparado para POST em",
+      "noOpenPositions": "Sem posições abertas para {{symbol}}."
+    },
+    "apiErrors": {
+      "symbolRequired": "Selecione um símbolo de mercado válido.",
+      "invalidQuantity": "Informe uma quantidade válida.",
+      "invalidEntryPrice": "Informe um preço de entrada válido.",
+      "sessionNotFound": "Sessão não encontrada no backend. Crie uma sessão válida primeiro.",
+      "createSessionFailed": "Não foi possível criar a sessão no backend.",
+      "requestFailed": "Não foi possível concluir a requisição. Tente novamente."
+    },
+    "labels": {
+      "entry": "Entrada",
+      "market": "Mercado",
+      "pnl": "PnL"
+    },
+    "theater": {
+      "orderOpen": "Ordem aberta: {{side}} · {{quantity}}",
+      "orderStatusNoOpen": "Status da ordem: sem ordem aberta para {{symbol}}."
+    },
+    "sides": {
+      "buy": "Compra",
+      "sell": "Venda"
+    },
+    "tabs": {
+      "summary": "Resumo",
+      "sessions": "Sessões",
+      "summaryHeading": "Resumo do mercado",
+      "summaryDescription": "Esta visão será configurada com os dados principais do ativo.",
+      "sessionsHeading": "Sessões de mercado",
+      "sessionsDescription": "Compare comportamento e desempenho por sessão de negociação."
+    },
+    "summary": {
+      "title": "Resumo de sessões",
+      "description": "Todos os dados desta área são consolidados por sessão.",
+      "cards": {
+        "timeInvested": "Tempo investido",
+        "periodHint": "Base geral",
+        "successRate": "Taxa de sucesso",
+        "winsLosses": "Wins: {{wins}} · Losses: {{losses}}",
+        "totalPnl": "PnL total",
+        "totalTrades": "Trades: {{count}}",
+        "completedSessions": "Sessões concluídas",
+        "activeSessions": "Ativas: {{count}}"
+      },
+      "charts": {
+        "timeByMonth": "Tempo investido por mês",
+        "successByMonth": "Taxa de sucesso por mês",
+        "tradesBySymbol": "Negociações por símbolo",
+        "monthlyBase": "Base mensal",
+        "symbolBase": "Base por ativo"
+      }
+    },
+    "tradingViewNext": {
+      "title": "TradingView em tela cheia (próximo passo)",
+      "description": "Ao criar uma sessão, o ambiente completo de simulação com gráfico será aberto no próximo fluxo."
+    },
+    "sessions": {
+      "title": "Sessões registradas",
+      "description": "Lista de sessões e métricas consolidadas por execução.",
+      "empty": "Nenhuma sessão encontrada.",
+      "page": "Página {{page}}",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "status": {
+        "active": "Ativa",
+        "completed": "Concluída"
+      },
+      "labels": {
+        "market": "Mercado: {{symbol}}",
+        "slot": {
+          "asia": "Sessão Ásia",
+          "london": "Sessão Londres",
+          "ny": "Sessão Nova York"
+        },
+        "timeframe": "Timeframe: {{value}}",
+        "trades": "Trades: {{count}}",
+        "pnl": "PnL",
+        "successRate": "Taxa de sucesso",
+        "winsLosses": "Wins: {{wins}} · Losses: {{losses}}"
+      }
+    },
+    "newSession": {
+      "button": "New Session",
+      "title": "Nova sessão",
+      "description": "Defina os parâmetros iniciais da sessão de simulação.",
+      "validationName": "Informe um nome para a sessão.",
+      "validationBalance": "Informe um account balance válido.",
+      "validationDates": "Informe data inicial e data final.",
+      "validationDateRange": "A data inicial deve ser anterior à data final.",
+      "created": "Sessão criada com sucesso.",
+      "fields": {
+        "name": "Nome da sessão",
+        "namePlaceholder": "Ex.: NY Breakout",
+        "accountBalance": "Account balance",
+        "assets": "Assets (mercado)",
+        "market": "Mercado",
+        "startDate": "Data inicial",
+        "endDate": "Data final",
+        "session": "Sessão",
+        "timeframe": "Timeframe"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Criar sessão",
+        "creating": "Criando..."
+      }
+    },
+    "replay": {
+      "mode": "Replay Session",
+      "balance": "Balance: {{value}}",
+      "asset": "Asset: {{value}}",
+      "period": "Período: {{from}} até {{to}}",
+      "exit": "Sair da sessão",
+      "confirmExit": "Deseja encerrar a sessão e sair do replay?",
+      "stay": "Ficar",
+      "end": "Encerrar"
+    }
+  },
+  "news": {
+    "title": "Notícias",
+    "subtitle": "Manchetes do mercado financeiro global",
+    "latestLabel": "Últimas {{count}} notícias",
+    "empty": "Sem notícias disponíveis para {{topic}}.",
+    "filters": {
+      "label": "Tema",
+      "all": "Todos",
+      "stocks": "Ações",
+      "forex": "Forex",
+      "commodities": "Commodities"
+    },
+    "actions": {
+      "readMore": "Ler mais",
+      "previous": "Anterior",
+      "next": "Próxima"
+    },
+    "pagination": {
+      "page": "Página {{page}}"
+    },
+    "labels": {
+      "noSummary": "Sem resumo disponível."
+    },
+    "errors": {
+      "loadFailed": "Não foi possível carregar as notícias no momento."
+    },
+    "source": {
+      "label": "Fonte",
+      "backend": "API Backend",
+      "gnews": "API GNews",
+      "mock": "Mock local",
+      "liveHint": "Exibindo manchetes financeiras ao vivo.",
+      "mockHint": "Exibindo conteúdo de fallback do provedor via backend."
+    }
+  },
+  "dashboard": {
+    "title": "Painel",
+    "charts": {
+      "tradesPnl": "P&L de trades",
+      "marketTracker": "Monitor de mercado",
+      "tradingDays": "Dias de trade",
+      "winRate": "Taxa de acerto por dia",
+      "lineProSubtitle": "Linha • dados mock",
+      "lineLiveSubtitle": "Linha • dados ao vivo",
+      "barProSubtitle": "Colunas • dados mock",
+      "barLiveSubtitle": "Colunas • dados ao vivo",
+      "mockData": "Dados mock",
+      "updated": "Atualizado há {value}"
+    },
+    "source": {
+      "live": "API ao vivo",
+      "mock": "Fallback mock"
+    },
+    "errors": {
+      "loadFailed": "Não foi possível carregar o dashboard. Exibindo dados de fallback."
+    },
+    "summary": {
+      "timeInvested": "Tempo investido",
+      "tradesMonth": "Negociações este mês",
+      "history": "Histórico total de negociações",
+      "thisQuarter": "Neste trimestre",
+      "thisMonth": "Neste mês",
+      "allTime": "Todo o período"
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "tabs": {
+      "data": "Dados",
+      "subscription": "Assinatura",
+      "dataHeading": "Dados do perfil",
+      "dataDescription": "Adicione ou edite suas informações pessoais e dados de contato aqui.",
+      "subscriptionHeading": "Assinatura",
+      "subscriptionDescription": "Gerencie seu plano, detalhes de cobrança e preferências de renovação."
+    },
+    "subscription": {
+      "plan": "Plano",
+      "price": "Preço",
+      "loading": "Carregando dados da assinatura...",
+      "loadFailed": "Não foi possível carregar os dados da assinatura.",
+      "renewsIn": "Tempo restante",
+      "renewsInDays": "{{count}} dias",
+      "renewDate": "Data de renovação",
+      "renewNow": "Renovar agora",
+      "renewSuccess": "Assinatura renovada com sucesso.",
+      "renewConflict": "A assinatura já foi renovada no ciclo atual.",
+      "paymentRequired": "Pagamento necessário para concluir a renovação.",
+      "cancel": "Cancelar assinatura",
+      "cancelSuccess": "Assinatura cancelada com sucesso.",
+      "cancelModal": {
+        "title": "Confirmar cancelamento",
+        "description": "Digite sua senha atual para cancelar sua assinatura.",
+        "passwordLabel": "Senha atual",
+        "passwordPlaceholder": "Digite sua senha",
+        "passwordRequired": "A senha é obrigatória.",
+        "incorrectPassword": "Senha incorreta. Tente novamente.",
+        "confirm": "Cancelar",
+        "back": "Voltar"
+      },
+      "actionFailed": "Não foi possível concluir a ação da assinatura.",
+      "status": "Status",
+      "statusValue": {
+        "active": "Ativa",
+        "cancelled": "Cancelada"
+      },
+      "paymentMethod": "Método de pagamento",
+      "nextInvoice": "Próxima cobrança",
+      "lastPayment": "Último pagamento",
+      "invoicesTitle": "Histórico de faturas",
+      "invoicesEmpty": "Nenhuma fatura encontrada.",
+      "invoicesPage": "Página {{page}}",
+      "invoicesPrevious": "Anterior",
+      "invoicesNext": "Próxima",
+      "invoiceStatus": {
+        "paid": "Pago",
+        "pending": "Pendente",
+        "failed": "Falhou"
+      }
+    },
+    "data": {
+      "name": "Nome",
+      "namePlaceholder": "Seu nome completo",
+      "email": "E-mail",
+      "emailPlaceholder": "voce@simcorex.com",
+      "errors": {
+        "nameRequired": "O nome é obrigatório.",
+        "nameMin": "O nome deve ter pelo menos 2 caracteres.",
+        "nameMax": "O nome deve ter no máximo 100 caracteres.",
+        "emailRequired": "O e-mail é obrigatório.",
+        "emailInvalid": "O e-mail é inválido."
+      },
+      "password": "Senha",
+      "changePassword": "Mudar senha",
+      "oldPassword": "Senha atual",
+      "oldPasswordPlaceholder": "Digite sua senha atual",
+      "newPassword": "Nova senha",
+      "newPasswordPlaceholder": "Digite uma nova senha",
+      "confirmPassword": "Confirmar nova senha",
+      "confirmPasswordPlaceholder": "Repita a nova senha",
+      "savePassword": "Salvar nova senha",
+      "savingPassword": "Salvando...",
+      "passwordUpdated": "Senha atualizada com sucesso",
+      "passwordMismatch": "A nova senha e a confirmação precisam ser iguais",
+      "invalidCurrentPassword": "A senha atual é inválida.",
+      "passwordNotChanged": "A nova senha deve ser diferente da senha atual.",
+      "passwordUpdateFailed": "Não foi possível atualizar a senha. Tente novamente.",
+      "saveProfile": "Salvar perfil",
+      "savingProfile": "Salvando...",
+      "profileUpdated": "Perfil atualizado com sucesso",
+      "profileUpdateFailed": "Não foi possível atualizar o perfil. Tente novamente."
+    }
+  },
+  "language": {
+    "english": "Inglês",
+    "spanish": "Espanhol",
+    "portuguese": "Português"
+  },
+  "status": {
+    "underConstruction": "Esta página está em construção.",
+    "notFound": "Página não encontrada.",
+    "backToLogin": "Voltar para o login"
+  }
+}

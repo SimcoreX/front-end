@@ -1,0 +1,428 @@
+{
+  "app": {
+    "name": "SIMCOREX",
+    "tagline": "Trade with clarity"
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Access your dashboard",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@simcorex.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Your secure password",
+    "cta": "Log in",
+    "loading": "Signing in...",
+    "errors": {
+      "invalidCredentials": "Incorrect email or password.",
+      "unauthorized": "Session expired. Please sign in again.",
+      "generic": "Could not complete authentication. Try again.",
+      "serviceUnavailable": "Could not reach the server. Check your connection and API URL.",
+      "statusDetail": "Status: {{statusCode}} · Code: {{code}}"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "trades": "Markets",
+    "history": "History",
+    "news": "News",
+    "logout": "Log out",
+    "language": "Language",
+    "profile": "Profile"
+  },
+  "history": {
+    "title": "History",
+    "overview": "Consolidated analysis",
+    "filtersTitle": "Performance and period filters",
+    "loading": "Loading history data...",
+    "errors": {
+      "loadFailed": "Could not load history right now."
+    },
+    "calendar": {
+      "open": "Trade calendar",
+      "title": "Monthly trade calendar",
+      "close": "Close",
+      "prev": "Prev",
+      "next": "Next",
+      "details": "Day details",
+      "trades": "Trades: {{count}}",
+      "wins": "Wins: {{count}}",
+      "losses": "Losses: {{count}}",
+      "winDay": "Win day",
+      "lossDay": "Loss day",
+      "noTrades": "No trades for this date."
+    },
+    "filters": {
+      "all": "All",
+      "best": "Best trades",
+      "worst": "Worst trades",
+      "clear": "Clear filters"
+    },
+    "fields": {
+      "dateFrom": "Start date",
+      "dateTo": "End date",
+      "topPerformance": "Top by performance",
+      "symbol": "Asset",
+      "session": "Session"
+    },
+    "options": {
+      "select": "Select...",
+      "top10": "Top 10",
+      "top20": "Top 20",
+      "top50": "Top 50",
+      "eurusd": "EURUSD",
+      "btcusd": "BTCUSD",
+      "nasdaq": "NASDAQ",
+      "asia": "Asia",
+      "london": "London",
+      "ny": "New York"
+    },
+    "summary": {
+      "filteredTrades": "Filtered trades",
+      "totalPnl": "Total PnL",
+      "winRate": "Win rate",
+      "avgTrade": "Average per trade"
+    },
+    "hints": {
+      "baseCurrent": "Current base",
+      "period": "Period",
+      "average": "Average",
+      "perTrade": "Per trade"
+    },
+    "charts": {
+      "pnlCumulative": "Cumulative PnL",
+      "performanceDaily": "Daily performance",
+      "tradesPerDay": "Trades per day",
+      "tradesVolume": "Operations volume",
+      "winRateDaily": "Daily win rate",
+      "consistency": "Consistency",
+      "avgPnlDaily": "Average PnL per day",
+      "effectiveness": "Effectiveness",
+      "filteredData": "Filtered data"
+    }
+  },
+  "trades": {
+    "fields": {
+      "market": "Market",
+      "interval": "Interval",
+      "side": "Side",
+      "quantity": "Quantity",
+      "entryPrice": "Entry price",
+      "stopLossOptional": "Stop Loss (optional)",
+      "takeProfitOptional": "Take Profit (optional)"
+    },
+    "metrics": {
+      "currentPrice": "Current price",
+      "variation": "Variation",
+      "high": "High",
+      "low": "Low",
+      "openPositions": "Open positions",
+      "exposure": "Exposure",
+      "openPnl": "Open PnL"
+    },
+    "panel": {
+      "backendIntegration": "Backend integration",
+      "operationsPanel": "Operations panel"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "theaterMode": "Theater mode",
+      "marketBuy": "Market Buy",
+      "marketSell": "Market Sell",
+      "openOperation": "Open operation",
+      "closeAll": "Close all ({{count}})",
+      "close": "Close",
+      "closeTheater": "Exit theater"
+    },
+    "source": {
+      "label": "Source",
+      "twelveData": "Twelve Data",
+      "mockLocal": "Local mock",
+      "mockFallback": "Using mock market data"
+    },
+    "messages": {
+      "invalidQuantity": "Invalid quantity",
+      "invalidEntry": "Invalid entry price",
+      "openedBackend": "Operation opened ({{side}}) · backend {{status}}",
+      "openedLocal": "Operation opened locally ({{side}})",
+      "payloadPrepared": "Payload prepared for POST at",
+      "noOpenPositions": "No open positions for {{symbol}}."
+    },
+    "apiErrors": {
+      "symbolRequired": "Select a valid market symbol.",
+      "invalidQuantity": "Enter a valid quantity.",
+      "invalidEntryPrice": "Enter a valid entry price.",
+      "sessionNotFound": "Session not found in backend. Create a valid session first.",
+      "createSessionFailed": "Could not create session on backend.",
+      "requestFailed": "Could not complete the request. Try again."
+    },
+    "labels": {
+      "entry": "Entry",
+      "market": "Market",
+      "pnl": "PnL"
+    },
+    "theater": {
+      "orderOpen": "Open order: {{side}} · {{quantity}}",
+      "orderStatusNoOpen": "Order status: no open order for {{symbol}}."
+    },
+    "sides": {
+      "buy": "Buy",
+      "sell": "Sell"
+    },
+    "tabs": {
+      "summary": "Summary",
+      "sessions": "Sessions",
+      "summaryHeading": "Market summary",
+      "summaryDescription": "This view will be configured with the main asset data.",
+      "sessionsHeading": "Market sessions",
+      "sessionsDescription": "Compare behavior and performance by trading session."
+    },
+    "summary": {
+      "title": "Session summary",
+      "description": "All data in this area is consolidated by session.",
+      "cards": {
+        "timeInvested": "Time invested",
+        "periodHint": "Overall base",
+        "successRate": "Success rate",
+        "winsLosses": "Wins: {{wins}} · Losses: {{losses}}",
+        "totalPnl": "Total PnL",
+        "totalTrades": "Trades: {{count}}",
+        "completedSessions": "Completed sessions",
+        "activeSessions": "Active: {{count}}"
+      },
+      "charts": {
+        "timeByMonth": "Time invested per month",
+        "successByMonth": "Success rate per month",
+        "tradesBySymbol": "Trades by symbol",
+        "monthlyBase": "Monthly base",
+        "symbolBase": "Symbol base"
+      }
+    },
+    "tradingViewNext": {
+      "title": "TradingView full-screen (next step)",
+      "description": "After creating a session, the full simulation environment with chart will open in the next flow."
+    },
+    "sessions": {
+      "title": "Recorded sessions",
+      "description": "Session list with consolidated metrics per execution.",
+      "empty": "No sessions found.",
+      "page": "Page {{page}}",
+      "previous": "Previous",
+      "next": "Next",
+      "status": {
+        "active": "Active",
+        "completed": "Completed"
+      },
+      "labels": {
+        "market": "Market: {{symbol}}",
+        "slot": {
+          "asia": "Asia session",
+          "london": "London session",
+          "ny": "New York session"
+        },
+        "timeframe": "Timeframe: {{value}}",
+        "trades": "Trades: {{count}}",
+        "pnl": "PnL",
+        "successRate": "Success rate",
+        "winsLosses": "Wins: {{wins}} · Losses: {{losses}}"
+      }
+    },
+    "newSession": {
+      "button": "New Session",
+      "title": "New session",
+      "description": "Set the initial parameters for the simulation session.",
+      "validationName": "Enter a session name.",
+      "validationBalance": "Enter a valid account balance.",
+      "validationDates": "Enter start and end dates.",
+      "validationDateRange": "Start date must be earlier than end date.",
+      "created": "Session created successfully.",
+      "fields": {
+        "name": "Session name",
+        "namePlaceholder": "Ex.: NY Breakout",
+        "accountBalance": "Account balance",
+        "assets": "Assets (market)",
+        "market": "Market",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "session": "Session",
+        "timeframe": "Timeframe"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create session",
+        "creating": "Creating..."
+      }
+    },
+    "replay": {
+      "mode": "Replay Session",
+      "balance": "Balance: {{value}}",
+      "asset": "Asset: {{value}}",
+      "period": "Period: {{from}} to {{to}}",
+      "exit": "Exit session",
+      "confirmExit": "Do you want to end the session and leave replay mode?",
+      "stay": "Stay",
+      "end": "End session"
+    }
+  },
+  "news": {
+    "title": "News",
+    "subtitle": "Global financial market headlines",
+    "latestLabel": "Latest {{count}} news",
+    "empty": "No news available for {{topic}}.",
+    "filters": {
+      "label": "Topic",
+      "all": "All",
+      "stocks": "Stocks",
+      "forex": "Forex",
+      "commodities": "Commodities"
+    },
+    "actions": {
+      "readMore": "Read more",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "pagination": {
+      "page": "Page {{page}}"
+    },
+    "labels": {
+      "noSummary": "No summary available."
+    },
+    "errors": {
+      "loadFailed": "Unable to load news at the moment."
+    },
+    "source": {
+      "label": "Source",
+      "backend": "Backend API",
+      "gnews": "GNews API",
+      "mock": "Local mock",
+      "liveHint": "Showing live financial headlines.",
+      "mockHint": "Showing provider fallback content from backend."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "charts": {
+      "tradesPnl": "Trades P&L",
+      "marketTracker": "Market tracker",
+      "tradingDays": "Trading days",
+      "winRate": "Win rate per day",
+      "lineProSubtitle": "Line • mock data",
+      "lineLiveSubtitle": "Line • live data",
+      "barProSubtitle": "Columns • mock data",
+      "barLiveSubtitle": "Columns • live data",
+      "mockData": "Mock data",
+      "updated": "Updated {value}"
+    },
+    "source": {
+      "live": "Live API",
+      "mock": "Mock fallback"
+    },
+    "errors": {
+      "loadFailed": "Could not load dashboard. Showing fallback data."
+    },
+    "summary": {
+      "timeInvested": "Time invested",
+      "tradesMonth": "Trades this month",
+      "history": "Total trade history",
+      "thisQuarter": "This quarter",
+      "thisMonth": "This month",
+      "allTime": "All time"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "tabs": {
+      "data": "Data",
+      "subscription": "Subscription",
+      "dataHeading": "Profile data",
+      "dataDescription": "Add or edit your personal information and contact details here.",
+      "subscriptionHeading": "Subscription",
+      "subscriptionDescription": "Manage your plan, billing details, and renewal preferences."
+    },
+    "subscription": {
+      "plan": "Plan",
+      "price": "Price",
+      "loading": "Loading subscription data...",
+      "loadFailed": "Could not load subscription data.",
+      "renewsIn": "Time remaining",
+      "renewsInDays": "{{count}} days",
+      "renewDate": "Renewal date",
+      "renewNow": "Renew now",
+      "renewSuccess": "Subscription renewed successfully.",
+      "renewConflict": "Subscription has already been renewed for the current cycle.",
+      "paymentRequired": "Payment required to complete renewal.",
+      "cancel": "Cancel subscription",
+      "cancelSuccess": "Subscription canceled successfully.",
+      "cancelModal": {
+        "title": "Confirm cancellation",
+        "description": "Enter your current password to cancel your subscription.",
+        "passwordLabel": "Current password",
+        "passwordPlaceholder": "Enter your password",
+        "passwordRequired": "Password is required.",
+        "incorrectPassword": "Incorrect password. Try again.",
+        "confirm": "Cancel",
+        "back": "Back"
+      },
+      "actionFailed": "Could not complete subscription action.",
+      "status": "Status",
+      "statusValue": {
+        "active": "Active",
+        "cancelled": "Cancelled"
+      },
+      "paymentMethod": "Payment method",
+      "nextInvoice": "Next charge",
+      "lastPayment": "Last payment",
+      "invoicesTitle": "Invoice history",
+      "invoicesEmpty": "No invoices found.",
+      "invoicesPage": "Page {{page}}",
+      "invoicesPrevious": "Previous",
+      "invoicesNext": "Next",
+      "invoiceStatus": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "failed": "Failed"
+      }
+    },
+    "data": {
+      "name": "Name",
+      "namePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "you@simcorex.com",
+      "errors": {
+        "nameRequired": "Name is required.",
+        "nameMin": "Name must be at least 2 characters.",
+        "nameMax": "Name must be at most 100 characters.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Email is invalid."
+      },
+      "password": "Password",
+      "changePassword": "Change password",
+      "oldPassword": "Current password",
+      "oldPasswordPlaceholder": "Enter your current password",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "Enter a new password",
+      "confirmPassword": "Confirm new password",
+      "confirmPasswordPlaceholder": "Re-enter the new password",
+      "savePassword": "Save new password",
+      "savingPassword": "Saving...",
+      "passwordUpdated": "Password updated successfully",
+      "passwordMismatch": "New password and confirmation must match",
+      "invalidCurrentPassword": "Current password is invalid.",
+      "passwordNotChanged": "New password must be different from current password.",
+      "passwordUpdateFailed": "Could not update password. Try again.",
+      "saveProfile": "Save profile",
+      "savingProfile": "Saving...",
+      "profileUpdated": "Profile updated successfully",
+      "profileUpdateFailed": "Could not update profile. Try again."
+    }
+  },
+  "language": {
+    "english": "English",
+    "spanish": "Spanish",
+    "portuguese": "Portuguese"
+  },
+  "status": {
+    "underConstruction": "This page is under construction.",
+    "notFound": "Page not found.",
+    "backToLogin": "Back to login"
+  }
+}
