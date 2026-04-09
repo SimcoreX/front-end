@@ -1,14 +1,5 @@
+import { getApiBaseUrl } from "@/lib/http/apiBaseUrl";
 import { useAuthStore } from "@/stores/authStore";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-
-function getApiBaseUrl() {
-  if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    return "";
-  }
-
-  return API_BASE_URL;
-}
 
 type RefreshSessionResponse = {
   accessToken: string;
