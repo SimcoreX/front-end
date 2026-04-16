@@ -393,7 +393,7 @@ export function ProfileTabs() {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-primary-800/70 bg-primary-900/50 shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
-      <div className="flex gap-3 bg-primary-950/80 px-3 pt-3">
+      <div className="flex gap-3 bg-primary-900/50 px-3 pt-3">
         {tabs.map((tab) => {
           const isActive = tab.key === activeTab;
           return (

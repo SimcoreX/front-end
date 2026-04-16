@@ -152,6 +152,9 @@
       "invalidQuantity": "Ingresa una cantidad válida.",
       "invalidEntryPrice": "Ingresa un precio de entrada válido.",
       "sessionNotFound": "Sesión no encontrada en backend. Crea una sesión válida primero.",
+      "invalidSessionDates": "Las fechas de la sesión son inválidas. La fecha final debe ser mayor o igual a la fecha inicial.",
+      "invalidCreatePayload": "Los datos de la sesión son inválidos. Revisa el formulario e inténtalo de nuevo.",
+      "forbiddenCreateSession": "No tienes permiso para crear sesiones con este usuario.",
       "createSessionFailed": "No se pudo crear la sesión en backend.",
       "requestFailed": "No se pudo completar la solicitud. Inténtalo de nuevo."
     },
@@ -232,8 +235,11 @@
       "description": "Define los parametros iniciales de la sesion de simulacion.",
       "validationName": "Ingresa un nombre para la sesion.",
       "validationBalance": "Ingresa un account balance valido.",
+      "validationTimeframe": "Selecciona un timeframe válido.",
       "validationDates": "Ingresa fecha inicial y fecha final.",
-      "validationDateRange": "La fecha inicial debe ser anterior a la fecha final.",
+      "validationStartDate": "Ingresa una fecha inicial válida.",
+      "validationEndDate": "Ingresa una fecha final válida.",
+      "validationDateRange": "La fecha final debe ser mayor o igual a la fecha inicial.",
       "created": "Sesion creada con exito.",
       "fields": {
         "name": "Nombre de la sesion",
@@ -303,8 +309,9 @@
     "charts": {
       "tradesPnl": "P&L de trades",
       "marketTracker": "Monitor de mercado",
+      "tradesBySymbol": "Trades por símbolo",
       "tradingDays": "Días de trading",
-      "winRate": "Tasa de acierto por día",
+      "winRate": "Tasa de acierto",
       "lineProSubtitle": "Línea • datos mock",
       "lineLiveSubtitle": "Línea • datos en vivo",
       "barProSubtitle": "Columnas • datos mock",
@@ -320,6 +327,14 @@
       "loadFailed": "No se pudo cargar el dashboard. Mostrando datos de respaldo."
     },
     "summary": {
+      "overallWinRate": "Overall Win Rate",
+      "overallWinRateHint": "Tasa de acierto en el historial completo.",
+      "overallWinRateError": "Tasa no disponible por ahora.",
+      "tradesTaken": "Trades Taken",
+      "buySellRatio": "Buys {{buy}} · Sells {{sell}}",
+      "tradesTakenError": "Datos de trades no disponibles por ahora.",
+      "historicalTime": "Historical Time",
+      "basedOnSessions": "Based on {{count}} sessions",
       "timeInvested": "Tiempo invertido",
       "tradesMonth": "Operaciones este mes",
       "history": "Historial total de operaciones",

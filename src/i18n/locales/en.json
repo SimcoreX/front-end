@@ -152,6 +152,9 @@
       "invalidQuantity": "Enter a valid quantity.",
       "invalidEntryPrice": "Enter a valid entry price.",
       "sessionNotFound": "Session not found in backend. Create a valid session first.",
+      "invalidSessionDates": "Session dates are invalid. End date must be greater than or equal to start date.",
+      "invalidCreatePayload": "Session payload is invalid. Please review the form and try again.",
+      "forbiddenCreateSession": "You do not have permission to create sessions with this user.",
       "createSessionFailed": "Could not create session on backend.",
       "requestFailed": "Could not complete the request. Try again."
     },
@@ -232,8 +235,11 @@
       "description": "Set the initial parameters for the simulation session.",
       "validationName": "Enter a session name.",
       "validationBalance": "Enter a valid account balance.",
+      "validationTimeframe": "Select a valid timeframe.",
       "validationDates": "Enter start and end dates.",
-      "validationDateRange": "Start date must be earlier than end date.",
+      "validationStartDate": "Enter a valid start date.",
+      "validationEndDate": "Enter a valid end date.",
+      "validationDateRange": "End date must be greater than or equal to start date.",
       "created": "Session created successfully.",
       "fields": {
         "name": "Session name",
@@ -303,8 +309,9 @@
     "charts": {
       "tradesPnl": "Trades P&L",
       "marketTracker": "Market tracker",
+      "tradesBySymbol": "Trades by symbol",
       "tradingDays": "Trading days",
-      "winRate": "Win rate per day",
+      "winRate": "Win rate",
       "lineProSubtitle": "Line • mock data",
       "lineLiveSubtitle": "Line • live data",
       "barProSubtitle": "Columns • mock data",
@@ -320,6 +327,14 @@
       "loadFailed": "Could not load dashboard. Showing fallback data."
     },
     "summary": {
+      "overallWinRate": "Overall Win Rate",
+      "overallWinRateHint": "Win rate across full history.",
+      "overallWinRateError": "Rate unavailable right now.",
+      "tradesTaken": "Trades Taken",
+      "buySellRatio": "Buys {{buy}} · Sells {{sell}}",
+      "tradesTakenError": "Trade data unavailable right now.",
+      "historicalTime": "Historical Time",
+      "basedOnSessions": "Based on {{count}} sessions",
       "timeInvested": "Time invested",
       "tradesMonth": "Trades this month",
       "history": "Total trade history",

@@ -2,8 +2,10 @@
 
 import { PageTitle } from "@/components/content/PageTitle";
 import { DatePicker } from "@/components/forms/DatePicker";
+import { SelectField } from "@/components/forms/SelectField";
 import { TextField } from "@/components/forms/TextField";
 import { Button } from "@/components/ui/Button";
+import { TradesBySymbolChart } from "@/components/charts/TradesBySymbolChart";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getMarketSymbols } from "@/lib/api/reference";
 import { completeSession, createSession, getSessionAnalytics, listSessions } from "@/lib/api/trades";
@@ -13,7 +15,9 @@ import type { MarketSymbolItem } from "@/lib/types/reference";
 import type { SessionAnalyticsResponse, SessionRecordResponse } from "@/lib/types/trades";
 import { ArrowLeft as ArrowLeftIcon, Plus as PlusIcon } from "@phosphor-icons/react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { FocusEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 const tabs = [
@@ -22,6 +26,10 @@ const tabs = [
 ] as const;
 
 const SESSIONS_PAGE_SIZE = 5;
+const TIMEFRAME_OPTIONS = ["M1", "M5", "M15"].map((timeframe) => ({
+  value: timeframe,
+  label: timeframe,
+}));
 
 type MarketOption = {
   value: string;
@@ -36,6 +44,7 @@ type NewSessionForm = {
   name: string;
   accountBalance: string;
   symbol: string;
+  timeframe: string;
   startDate: string;
   endDate: string;
 };
@@ -71,6 +80,8 @@ type MarketSessionRecord = {
 type MarketSummary = SessionAnalyticsResponse["summary"];
 
 export default function TradesPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>("summary");
   const [sessions, setSessions] = useState<MarketSessionRecord[]>([]);
@@ -109,8 +120,9 @@ export default function TradesPage() {
   const [hasMarketOptionsError, setHasMarketOptionsError] = useState(false);
   const [form, setForm] = useState<NewSessionForm>({
     name: "",
-    accountBalance: "100000",
+    accountBalance: formatUsdAmount(100000),
     symbol: "",
+    timeframe: "M5",
     startDate: getDefaultStartDate(),
     endDate: getDefaultEndDate(),
   });
@@ -215,7 +227,42 @@ export default function TradesPage() {
     loadSummaryData();
   }, [loadSessionsData, loadSummaryData]);
 
-  const totalHours = Math.round(summaryData.timeInvestedMinutes / 60);
+  useEffect(() => {
+    const shouldOpenReplay = searchParams.get("openReplay") === "1";
+    const sessionId = searchParams.get("sessionId");
+    if (!shouldOpenReplay || !sessionId) return;
+
+    const parsedBalance = Number(searchParams.get("balance"));
+    const startDate = searchParams.get("startDate") ?? getDefaultStartDate();
+    const endDate = searchParams.get("endDate") ?? getDefaultEndDate();
+    const symbol = searchParams.get("symbol") ?? "EURUSD";
+    const sessionName = searchParams.get("sessionName") ?? t("trades.newSession.title");
+
+    setActiveReplaySession({
+      sessionId,
+      sessionName,
+      accountBalance: Number.isFinite(parsedBalance) ? parsedBalance : 100000,
+      symbol,
+      startDate,
+      endDate,
+    });
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    [
+      "openReplay",
+      "sessionId",
+      "sessionName",
+      "balance",
+      "symbol",
+      "startDate",
+      "endDate",
+    ].forEach((key) => nextParams.delete(key));
+
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `/trades?${nextQuery}` : "/trades");
+  }, [router, searchParams, t]);
+
+  const totalTimeInvested = formatDurationFromMinutes(summaryData.timeInvestedMinutes);
 
   const charts = useMemo(() => {
     const monthlyTimeMap = new Map(
@@ -262,8 +309,9 @@ export default function TradesPage() {
   const resetForm = () => {
     setForm({
       name: "",
-      accountBalance: "100000",
+      accountBalance: formatUsdAmount(100000),
       symbol: marketOptions[0]?.value || "",
+      timeframe: "M5",
       startDate: getDefaultStartDate(),
       endDate: getDefaultEndDate(),
     });
@@ -286,15 +334,51 @@ export default function TradesPage() {
     resetForm();
   };
 
+  const handleAccountBalanceFocus = (event: FocusEvent<HTMLInputElement>) => {
+    setForm((prev) => ({
+      ...prev,
+      accountBalance: toEditableUsdInput(prev.accountBalance),
+    }));
+
+    const inputElement = event.currentTarget;
+    window.requestAnimationFrame(() => {
+      inputElement.select();
+    });
+  };
+
+  const handleAccountBalanceBlur = () => {
+    setForm((prev) => {
+      const trimmedValue = prev.accountBalance.trim();
+      if (!trimmedValue) {
+        return {
+          ...prev,
+          accountBalance: "",
+        };
+      }
+
+      return {
+        ...prev,
+        accountBalance: formatUsdCurrencyInput(trimmedValue),
+      };
+    });
+  };
+
   const handleCreateSession = async () => {
-    if (!form.name.trim()) {
+    const trimmedName = form.name.trim();
+    if (!trimmedName) {
       setStatusType("error");
       setStatusMessage(t("trades.newSession.validationName"));
       return;
     }
 
-    const parsedBalance = Number(form.accountBalance);
-    if (!Number.isFinite(parsedBalance) || parsedBalance <= 0) {
+    if (!form.timeframe.trim()) {
+      setStatusType("error");
+      setStatusMessage(t("trades.newSession.validationTimeframe"));
+      return;
+    }
+
+    const parsedBalance = parseUsdCurrencyInput(form.accountBalance);
+    if (parsedBalance === null || parsedBalance < 0) {
       setStatusType("error");
       setStatusMessage(t("trades.newSession.validationBalance"));
       return;
@@ -306,13 +390,27 @@ export default function TradesPage() {
       return;
     }
 
-    if (!form.symbol) {
+    if (!form.symbol.trim()) {
       setStatusType("error");
       setStatusMessage(t("trades.apiErrors.symbolRequired"));
       return;
     }
 
-    if (form.startDate > form.endDate) {
+    const startDateIso = normalizeSessionDateForCreate(form.startDate, "start");
+    if (!startDateIso) {
+      setStatusType("error");
+      setStatusMessage(t("trades.newSession.validationStartDate"));
+      return;
+    }
+
+    const endDateIso = normalizeSessionDateForCreate(form.endDate, "end");
+    if (!endDateIso) {
+      setStatusType("error");
+      setStatusMessage(t("trades.newSession.validationEndDate"));
+      return;
+    }
+
+    if (new Date(endDateIso).getTime() < new Date(startDateIso).getTime()) {
       setStatusType("error");
       setStatusMessage(t("trades.newSession.validationDateRange"));
       return;
@@ -321,14 +419,14 @@ export default function TradesPage() {
     setIsCreatingSession(true);
 
     try {
-      const createdAt = `${form.startDate}T00:00:00.000Z`;
-      const requestedTimeframe = normalizeTimeframe("5min");
+      const requestedTimeframe = normalizeTimeframe(form.timeframe);
 
       const created = await createSession({
-        name: form.name.trim(),
-        marketSymbol: formatMarketSymbol(form.symbol),
+        name: trimmedName,
+        marketSymbol: form.symbol.trim().toUpperCase(),
         timeframe: requestedTimeframe,
-        startedAt: createdAt,
+        startDate: startDateIso,
+        endDate: endDateIso,
         accountBalanceStart: roundToTwoDecimals(parsedBalance),
       });
 
@@ -348,7 +446,15 @@ export default function TradesPage() {
     } catch (error) {
       setStatusType("error");
       if (isApiError(error)) {
-        setStatusMessage(t("trades.apiErrors.createSessionFailed"));
+        if (error.code === "INVALID_SESSION_DATES") {
+          setStatusMessage(t("trades.apiErrors.invalidSessionDates"));
+        } else if (error.code === "FORBIDDEN_CREATE_SESSION") {
+          setStatusMessage(t("trades.apiErrors.forbiddenCreateSession"));
+        } else if (error.statusCode === 400) {
+          setStatusMessage(t("trades.apiErrors.invalidCreatePayload"));
+        } else {
+          setStatusMessage(t("trades.apiErrors.createSessionFailed"));
+        }
       } else {
         setStatusMessage(t("trades.apiErrors.requestFailed"));
       }
@@ -402,7 +508,7 @@ export default function TradesPage() {
       <PageTitle>{t("nav.trades")}</PageTitle>
 
       <div className="overflow-hidden rounded-2xl border border-primary-800/70 bg-primary-900/50 shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
-        <div className="flex gap-3 bg-primary-950/80 px-3 pt-3">
+        <div className="flex gap-3 bg-primary-900/50 px-3 pt-3">
           {tabs.map((tab) => {
             const isActive = tab.key === activeTab;
             return (
@@ -457,7 +563,7 @@ export default function TradesPage() {
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <MetricCard
                       label={t("trades.summary.cards.timeInvested")}
-                      value={`${totalHours}h`}
+                      value={totalTimeInvested}
                       hint={t("trades.summary.cards.periodHint")}
                     />
                     <MetricCard
@@ -486,7 +592,7 @@ export default function TradesPage() {
                       labels={charts.monthLabels}
                       data={charts.timeByMonth}
                       color="#2E5C8A"
-                      valueSuffix="h"
+                      valueSuffix="hr"
                     />
                     <ChartCard
                       title={t("trades.summary.charts.successByMonth")}
@@ -502,6 +608,7 @@ export default function TradesPage() {
                       labels={charts.symbolLabels}
                       data={charts.tradesBySymbol}
                       color="#2E5C8A"
+                      type="horizontal-bar"
                     />
                   </div>
                 </>
@@ -608,7 +715,7 @@ export default function TradesPage() {
       </div>
 
       {isNewSessionModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 p-3 backdrop-blur-[1px] sm:p-5">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-3 backdrop-blur-[1px] sm:items-center sm:p-5">
           <div className="mx-auto flex w-full max-w-2xl flex-col rounded-2xl border border-primary-800/70 bg-primary-900 p-5 shadow-[0_18px_40px_rgba(0,0,0,0.45)]">
             <div className="mb-4">
               <p className="text-lg font-semibold text-white">{t("trades.newSession.title")}</p>
@@ -624,12 +731,18 @@ export default function TradesPage() {
               />
               <TextField
                 label={t("trades.newSession.fields.accountBalance")}
-                type="number"
-                min="1"
-                step="100"
+                type="text"
+                inputMode="decimal"
                 value={form.accountBalance}
-                onChange={(event) => setForm((prev) => ({ ...prev, accountBalance: event.target.value }))}
-                placeholder="100000"
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    accountBalance: formatUsdInputWhileTyping(event.target.value),
+                  }))
+                }
+                onFocus={handleAccountBalanceFocus}
+                onBlur={handleAccountBalanceBlur}
+                placeholder="$100,000.00"
               />
               <MarketSymbolPicker
                 label={t("trades.newSession.fields.market")}
@@ -637,6 +750,12 @@ export default function TradesPage() {
                 options={marketOptions}
                 isLoading={isLoadingMarketOptions}
                 onChange={(nextSymbol) => setForm((prev) => ({ ...prev, symbol: nextSymbol }))}
+              />
+              <SelectField
+                label={t("trades.newSession.fields.timeframe")}
+                value={form.timeframe}
+                options={TIMEFRAME_OPTIONS}
+                onChange={(event) => setForm((prev) => ({ ...prev, timeframe: event.target.value }))}
               />
               {hasMarketOptionsError && (
                 <p className="text-xs text-red-300">{t("trades.apiErrors.requestFailed")}</p>
@@ -692,10 +811,10 @@ export default function TradesPage() {
             </div>
 
             <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <Button type="button" variant="light" onClick={handleCloseModal}>
+              <Button type="button" variant="secondary" onClick={handleCloseModal}>
                 {t("trades.newSession.actions.cancel")}
               </Button>
-              <Button type="button" variant="secondary" onClick={handleCreateSession}>
+              <Button type="button" variant="light" onClick={handleCreateSession}>
                 {isCreatingSession ? t("trades.newSession.actions.creating") : t("trades.newSession.actions.create")}
               </Button>
             </div>
@@ -772,7 +891,7 @@ function MetricCard({
   tone,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   hint: string;
   tone?: "positive" | "negative";
 }) {
@@ -860,6 +979,7 @@ type ChartCardProps = {
   data: number[];
   color: string;
   valueSuffix?: string;
+  type?: "bar" | "horizontal-bar";
 };
 
 function ChartCard({
@@ -869,6 +989,7 @@ function ChartCard({
   data,
   color,
   valueSuffix = "",
+  type = "bar",
 }: ChartCardProps) {
 
   return (
@@ -881,7 +1002,11 @@ function ChartCard({
       </div>
 
       <div className="mt-4 h-56">
-        <BarChart data={data} color={color} labels={labels} valueSuffix={valueSuffix} />
+        {type === "horizontal-bar" ? (
+          <TradesBySymbolChart data={data} labels={labels} valueSuffix={valueSuffix} />
+        ) : (
+          <BarChart data={data} color={color} labels={labels} valueSuffix={valueSuffix} />
+        )}
       </div>
     </div>
   );
@@ -900,6 +1025,19 @@ function BarChart({ data, labels, color, valueSuffix = "" }: BarChartProps) {
   const min = 0;
   const yRange = max === min ? 1 : max - min;
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [isAnimated, setIsAnimated] = useState(false);
+  const animationSeed = useMemo(() => `${labels.join("|")}::${data.join("|")}::${valueSuffix}`, [data, labels, valueSuffix]);
+
+  useEffect(() => {
+    setIsAnimated(false);
+    const frame = window.requestAnimationFrame(() => {
+      setIsAnimated(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [animationSeed]);
 
   return (
     <div className="relative h-full w-full">
@@ -907,6 +1045,7 @@ function BarChart({ data, labels, color, valueSuffix = "" }: BarChartProps) {
         {data.map((value, idx) => {
           const barHeight = ((value - min) / yRange) * height;
           const isHover = hoverIdx === idx;
+          const tone = getBlueScaleColor(idx, data.length);
           return (
             <div
               key={`${value}-${idx}`}
@@ -916,8 +1055,8 @@ function BarChart({ data, labels, color, valueSuffix = "" }: BarChartProps) {
               )}
               style={{
                 height: `${barHeight}px`,
-                backgroundColor: `${color}22`,
-                borderColor: isHover ? "#ffffffb3" : `${color}44`,
+                backgroundColor: `${tone}22`,
+                borderColor: isHover ? "#ffffffb3" : `${tone}44`,
               }}
               aria-label={`${labels[idx]}: ${value}`}
               onMouseEnter={() => setHoverIdx(idx)}
@@ -925,7 +1064,16 @@ function BarChart({ data, labels, color, valueSuffix = "" }: BarChartProps) {
             >
               <div
                 className="h-full w-full rounded-t-lg"
-                style={{ backgroundColor: color, opacity: isHover ? 0.95 : 0.75 }}
+                style={{
+                  transformOrigin: "bottom",
+                  transform: isAnimated ? "scaleY(1)" : "scaleY(0)",
+                  transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms, opacity 220ms ease`,
+                  backgroundImage: `linear-gradient(to top, ${tone}A4 0%, ${tone}D4 60%, rgba(196,230,255,0.9) 100%)`,
+                  opacity: isHover ? 1 : 0.9,
+                  boxShadow: isHover
+                    ? `inset 0 1px 0 rgba(255,255,255,0.52), 0 0 12px ${tone}55`
+                    : "inset 0 1px 0 rgba(255,255,255,0.3)",
+                }}
               />
             </div>
           );
@@ -948,6 +1096,18 @@ function BarChart({ data, labels, color, valueSuffix = "" }: BarChartProps) {
       </div>
     </div>
   );
+}
+
+const BLUE_SCALE = ["#1F3D63", "#25537F", "#2E5C8A", "#3A71A2", "#4C87BA", "#63A1D3"];
+
+function getBlueScaleColor(index: number, total: number) {
+  if (total <= 1) return BLUE_SCALE[2];
+  const position = index / (total - 1);
+  const paletteIndex = Math.min(
+    BLUE_SCALE.length - 1,
+    Math.round(position * (BLUE_SCALE.length - 1))
+  );
+  return BLUE_SCALE[paletteIndex];
 }
 
 function MarketSymbolPicker({
@@ -1085,6 +1245,30 @@ function ChevronDown() {
   );
 }
 
+function formatDurationFromMinutes(totalMinutes: number): ReactNode {
+  const safeMinutes = Math.max(0, Math.floor(totalMinutes));
+  const minutesPerDay = 24 * 60;
+  const days = Math.floor(safeMinutes / minutesPerDay);
+  const hours = Math.floor((safeMinutes % minutesPerDay) / 60);
+  const minutes = safeMinutes % 60;
+  return (
+    <span className="inline-flex items-baseline gap-2">
+      <DurationValue value={days} unit="d" />
+      <DurationValue value={hours} unit="hr" />
+      <DurationValue value={minutes} unit="min" />
+    </span>
+  );
+}
+
+function DurationValue({ value, unit }: { value: number; unit: string }) {
+  return (
+    <span>
+      <span>{value}</span>
+      <span className="ml-1 text-[0.68em] font-medium opacity-85">{unit}</span>
+    </span>
+  );
+}
+
 function formatMoney(value: number) {
   return Math.abs(value).toLocaleString("en-US", {
     style: "currency",
@@ -1170,8 +1354,121 @@ function normalizeTimeframe(value: string) {
   return normalized;
 }
 
+function normalizeSessionDateForCreate(value: string, boundary: "start" | "end") {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return null;
+
+  if (trimmedValue.includes("T")) {
+    const parsedDateTime = new Date(trimmedValue);
+    if (Number.isNaN(parsedDateTime.getTime())) return null;
+    return parsedDateTime.toISOString();
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmedValue)) {
+    return null;
+  }
+
+  const utcDate =
+    boundary === "start"
+      ? `${trimmedValue}T00:00:00.000Z`
+      : `${trimmedValue}T23:59:59.999Z`;
+  const parsedDate = new Date(utcDate);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return parsedDate.toISOString();
+}
+
 function roundToTwoDecimals(value: number) {
   return Math.round(value * 100) / 100;
+}
+
+function parseUsdCurrencyInput(value: string): number | null {
+  const sanitized = value.replace(/[^0-9.,-]/g, "").replace(/,/g, "").replace(/\.$/, "");
+  if (!sanitized) return null;
+
+  const parsed = Number(sanitized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatUsdCurrencyInput(value: string): string {
+  const parsed = parseUsdCurrencyInput(value);
+  if (parsed === null) return "";
+
+  return formatUsdAmount(parsed);
+}
+
+function toEditableUsdInput(value: string): string {
+  const parsed = parseUsdCurrencyInput(value);
+  if (parsed === null) return "";
+  return formatUsdInputWhileTyping(parsed.toFixed(2));
+}
+
+function formatUsdInputWhileTyping(value: string): string {
+  let normalized = value.replace(/[^0-9.,]/g, "");
+  if (!normalized) return "";
+  if (normalized === "." || normalized === ",") return "0.";
+
+  const hasDot = normalized.includes(".");
+  const hasComma = normalized.includes(",");
+
+  if (hasDot) {
+    normalized = normalized.replace(/,/g, "");
+    const hasTrailingDot = normalized.endsWith(".");
+    const [integerPartRaw, ...decimalParts] = normalized.split(".");
+    const integerPart = addThousandsSeparators(integerPartRaw.replace(/\D/g, ""));
+    const decimals = decimalParts.join("").replace(/\D/g, "").slice(0, 2);
+
+    if (hasTrailingDot && decimals.length === 0) {
+      return `${integerPart}.`;
+    }
+
+    if (decimals.length > 0) {
+      return `${integerPart}.${decimals}`;
+    }
+
+    return integerPart;
+  }
+
+  if (hasComma) {
+    const lastCommaIndex = normalized.lastIndexOf(",");
+    const integerRaw = normalized.slice(0, lastCommaIndex).replace(/\D/g, "");
+    const decimalRaw = normalized.slice(lastCommaIndex + 1).replace(/\D/g, "");
+
+    // Comma with up to 2 trailing digits is treated as decimal separator for typed inputs.
+    if (decimalRaw.length <= 2) {
+      const integerPart = addThousandsSeparators(integerRaw);
+      if (normalized.endsWith(",") && decimalRaw.length === 0) {
+        return `${integerPart}.`;
+      }
+
+      if (decimalRaw.length > 0) {
+        return `${integerPart}.${decimalRaw}`;
+      }
+
+      return integerPart;
+    }
+
+    return addThousandsSeparators(normalized.replace(/\D/g, ""));
+  }
+
+  return addThousandsSeparators(normalized.replace(/\D/g, ""));
+}
+
+function addThousandsSeparators(digits: string): string {
+  const normalizedDigits = digits.replace(/^0+(?=\d)/, "") || "0";
+  return normalizedDigits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function formatUsdAmount(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 function normalizeMarketOption(item: MarketSymbolItem): MarketOption {

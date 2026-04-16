@@ -4,11 +4,21 @@ export type DashboardOverviewQuery = {
   timezone?: string;
 };
 
+export type HistoricalTimeSummary = {
+  years: number;
+  months: number;
+  days: number;
+  label: string;
+  sessionCount: number;
+};
+
 export type DashboardOverviewSummary = {
   timeInvestedMinutes: number;
+  overallWinRate?: number;
   totalTrades: number;
   completedSessions: number;
   historyCount: number;
+  historicalTime?: HistoricalTimeSummary;
 };
 
 export type DashboardMonthPoint = {

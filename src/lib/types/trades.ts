@@ -1,3 +1,5 @@
+import type { HistoricalTimeSummary } from "@/lib/types/dashboard";
+
 export type TradeOperationPayload = {
   symbol: string;
   side: "buy" | "sell";
@@ -52,7 +54,8 @@ export type CreateSessionPayload = {
   name: string;
   marketSymbol: string;
   timeframe: string;
-  startedAt?: string;
+  startDate: string;
+  endDate: string;
   accountBalanceStart: number;
 };
 
@@ -90,6 +93,7 @@ export type SessionAnalyticsSummary = {
   timeInvestedMinutes: number;
   completedSessions: number;
   activeSessions: number;
+  historicalTime?: HistoricalTimeSummary;
 };
 
 export type SessionAnalyticsMonthPoint = {

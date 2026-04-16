@@ -7,6 +7,7 @@ import { DatePicker } from "@/components/forms/DatePicker";
 import { SelectField } from "@/components/forms/SelectField";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/lib/classNames";
+import { CaretDown as CaretDownIcon, CaretUp as CaretUpIcon } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,6 +43,7 @@ export default function HistoryPage() {
   const [symbolOptions, setSymbolOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [sessionOptions, setSessionOptions] = useState<ReferenceSessionItem[]>([]);
   const [hasReferenceError, setHasReferenceError] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const chartColor = "#2E5C8A";
 
@@ -297,107 +299,126 @@ export default function HistoryPage() {
         </p>
       )}
 
-      <div className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-5 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-sm text-primary-200">{t("history.overview")}</p>
-            <p className="text-lg font-semibold text-white">{t("history.filtersTitle")}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {(
-              [
-                { key: "all", label: t("history.filters.all") },
-                { key: "best", label: t("history.filters.best") },
-                { key: "worst", label: t("history.filters.worst") },
-              ] as const
-            ).map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => setPerformanceFilter(item.key)}
-                className={cn(
-                  "rounded-xl border px-4 py-2 text-sm font-semibold transition",
-                  performanceFilter === item.key
-                    ? "border-[#2E5C8A]/60 bg-[#2E5C8A]/20 text-white shadow-[0_8px_18px_rgba(46,92,138,0.25)]"
-                    : "border-primary-800/80 bg-primary-950/60 text-primary-200 hover:border-primary-600/60 hover:text-white"
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="rounded-xl border border-primary-700/60 bg-primary-900/60 px-4 py-2 text-sm font-semibold text-primary-100 transition hover:border-primary-500/70 hover:text-white"
-            >
-              {t("history.filters.clear")}
-            </button>
-            <button
-              type="button"
-              onClick={handleOpenCalendar}
-              className="rounded-xl border border-[#2E5C8A]/60 bg-[#2E5C8A]/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-[#2E5C8A]/80 hover:bg-[#2E5C8A]/30"
-            >
-              {t("history.calendar.open")}
-            </button>
-          </div>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={handleOpenCalendar}
+          className="rounded-xl border border-[#2E5C8A]/60 bg-[#2E5C8A]/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-[#2E5C8A]/80 hover:bg-[#2E5C8A]/30"
+        >
+          {t("history.calendar.open")}
+        </button>
 
-        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <DatePicker
-            label={t("history.fields.dateFrom")}
-            value={dateFrom}
-            onChange={(event) => setDateFrom(event.target.value)}
-          />
-          <DatePicker
-            label={t("history.fields.dateTo")}
-            value={dateTo}
-            onChange={(event) => setDateTo(event.target.value)}
-          />
-          <SelectField
-            label={t("history.fields.topPerformance")}
-            value={tradeLimit}
-            onChange={(event) => setTradeLimit(event.target.value)}
-            options={[
-              { value: "", label: t("history.options.select") },
-              { value: "10", label: t("history.options.top10") },
-              { value: "20", label: t("history.options.top20") },
-              { value: "50", label: t("history.options.top50") },
-            ]}
-          />
-          {isLoadingReference ? (
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-4 w-24 rounded" />
-              <Skeleton className="h-12.5 w-full rounded-xl" />
-            </div>
-          ) : (
-            <SelectField
-              label={t("history.fields.symbol")}
-              value={symbol}
-              onChange={(event) => setSymbol(event.target.value)}
-              options={[
-                { value: "", label: t("history.options.select") },
-                ...symbolOptions,
-              ]}
-            />
-          )}
-          {isLoadingReference ? (
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-4 w-24 rounded" />
-              <Skeleton className="h-12.5 w-full rounded-xl" />
-            </div>
-          ) : (
-            <SelectField
-              label={t("history.fields.session")}
-              value={session}
-              onChange={(event) => setSession(event.target.value)}
-              options={[
-                { value: "", label: t("history.options.select") },
-                ...sessionOptions,
-              ]}
-            />
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsFiltersOpen((prev) => !prev)}
+          className="inline-flex items-center gap-2 rounded-xl border border-[#2E5C8A]/70 bg-[#2E5C8A]/20 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(46,92,138,0.28)] transition hover:border-[#2E5C8A]/90 hover:bg-[#2E5C8A]/30"
+          aria-expanded={isFiltersOpen}
+          aria-controls="history-filters-panel"
+        >
+          <span>{t("history.filtersTitle")}</span>
+          {isFiltersOpen ? <CaretUpIcon size={18} weight="bold" /> : <CaretDownIcon size={18} weight="bold" />}
+        </button>
       </div>
+
+      {isFiltersOpen && (
+        <div
+          id="history-filters-panel"
+          className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-5 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm text-primary-200">{t("history.overview")}</p>
+              <p className="text-lg font-semibold text-white">{t("history.filtersTitle")}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { key: "all", label: t("history.filters.all") },
+                  { key: "best", label: t("history.filters.best") },
+                  { key: "worst", label: t("history.filters.worst") },
+                ] as const
+              ).map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setPerformanceFilter(item.key)}
+                  className={cn(
+                    "rounded-xl border px-4 py-2 text-sm font-semibold transition",
+                    performanceFilter === item.key
+                      ? "border-[#2E5C8A]/60 bg-[#2E5C8A]/20 text-white shadow-[0_8px_18px_rgba(46,92,138,0.25)]"
+                      : "border-primary-800/80 bg-primary-950/60 text-primary-200 hover:border-primary-600/60 hover:text-white"
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="rounded-xl border border-primary-700/60 bg-primary-900/60 px-4 py-2 text-sm font-semibold text-primary-100 transition hover:border-primary-500/70 hover:text-white"
+              >
+                {t("history.filters.clear")}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <DatePicker
+              label={t("history.fields.dateFrom")}
+              value={dateFrom}
+              onChange={(event) => setDateFrom(event.target.value)}
+            />
+            <DatePicker
+              label={t("history.fields.dateTo")}
+              value={dateTo}
+              onChange={(event) => setDateTo(event.target.value)}
+            />
+            <SelectField
+              label={t("history.fields.topPerformance")}
+              value={tradeLimit}
+              onChange={(event) => setTradeLimit(event.target.value)}
+              options={[
+                { value: "", label: t("history.options.select") },
+                { value: "10", label: t("history.options.top10") },
+                { value: "20", label: t("history.options.top20") },
+                { value: "50", label: t("history.options.top50") },
+              ]}
+            />
+            {isLoadingReference ? (
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-24 rounded" />
+                <Skeleton className="h-12.5 w-full rounded-xl" />
+              </div>
+            ) : (
+              <SelectField
+                label={t("history.fields.symbol")}
+                value={symbol}
+                onChange={(event) => setSymbol(event.target.value)}
+                options={[
+                  { value: "", label: t("history.options.select") },
+                  ...symbolOptions,
+                ]}
+              />
+            )}
+            {isLoadingReference ? (
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-24 rounded" />
+                <Skeleton className="h-12.5 w-full rounded-xl" />
+              </div>
+            ) : (
+              <SelectField
+                label={t("history.fields.session")}
+                value={session}
+                onChange={(event) => setSession(event.target.value)}
+                options={[
+                  { value: "", label: t("history.options.select") },
+                  ...sessionOptions,
+                ]}
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <>
@@ -422,7 +443,7 @@ export default function HistoryPage() {
               data={chartData.pnlSeries}
               labels={chartData.labels}
               color={chartColor}
-              type="line"
+              type="bar"
             />
             <ChartCard
               title={t("history.charts.tradesPerDay")}
@@ -446,7 +467,7 @@ export default function HistoryPage() {
               data={chartData.avgPnlPerDay}
               labels={chartData.labels}
               color={chartColor}
-              type="line"
+              type="bar"
             />
           </div>
         </>
@@ -454,7 +475,7 @@ export default function HistoryPage() {
 
       {isCalendarOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 p-3 backdrop-blur-[1px] sm:p-5">
-          <div className="mx-auto flex h-full max-w-450 flex-col overflow-hidden rounded-2xl border border-[#2E5C8A]/50 bg-[#1B314B] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.45)]">
+          <div className="mx-auto flex h-full max-w-450 flex-col overflow-hidden rounded-2xl border border-[#2E5C8A]/50 bg-[#1B314B] p-3 sm:p-4 shadow-[0_18px_40px_rgba(0,0,0,0.45)]">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-primary-200">{t("history.title")}</p>
@@ -466,45 +487,45 @@ export default function HistoryPage() {
                   setSelectedCalendarDate(null);
                   setIsCalendarOpen(false);
                 }}
-                className="rounded-xl border border-primary-700/70 px-3 py-2 text-sm font-semibold text-primary-100 transition hover:border-primary-500/70 hover:text-white"
+                className="rounded-xl border border-primary-700/70 px-2.5 py-1.5 text-xs font-semibold text-primary-100 transition hover:border-primary-500/70 hover:text-white sm:px-3 sm:py-2 sm:text-sm"
               >
                 {t("history.calendar.close")}
               </button>
             </div>
 
-            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#2E5C8A]/40 bg-[#13273d] px-3 py-2">
+            <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl border border-[#2E5C8A]/45 bg-linear-to-b from-[#17324f] to-[#13273d] p-2 sm:gap-3 sm:px-3 sm:py-2">
               <button
                 type="button"
                 onClick={() => setCalendarViewDate((prev) => addMonths(prev, -1))}
-                className="rounded-lg border border-[#2E5C8A]/60 px-3 py-1.5 text-xs font-semibold text-primary-100 transition hover:text-white"
+                className="inline-flex h-8 min-w-8 items-center justify-center rounded-xl border border-[#2E5C8A]/70 bg-[#102238]/80 px-2 text-[11px] font-semibold text-primary-100 transition hover:border-[#4C87BA]/75 hover:text-white sm:h-auto sm:min-w-0 sm:px-3 sm:py-1.5 sm:text-xs"
               >
                 {t("history.calendar.prev")}
               </button>
-              <p className="text-sm font-semibold text-white">
+              <p className="rounded-xl border border-[#2E5C8A]/40 bg-[#102238]/65 px-3 py-1 text-xs font-semibold text-white sm:text-sm">
                 {formatCalendarMonthYear(calendarViewDate, i18n.language)}
               </p>
               <button
                 type="button"
                 onClick={() => setCalendarViewDate((prev) => addMonths(prev, 1))}
-                className="rounded-lg border border-[#2E5C8A]/60 px-3 py-1.5 text-xs font-semibold text-primary-100 transition hover:text-white"
+                className="inline-flex h-8 min-w-8 items-center justify-center rounded-xl border border-[#2E5C8A]/70 bg-[#102238]/80 px-2 text-[11px] font-semibold text-primary-100 transition hover:border-[#4C87BA]/75 hover:text-white sm:h-auto sm:min-w-0 sm:px-3 sm:py-1.5 sm:text-xs"
               >
                 {t("history.calendar.next")}
               </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-2 text-center text-[10px] uppercase tracking-[0.2em] text-primary-300">
+            <div className="grid grid-cols-7 gap-1 rounded-xl border border-[#2E5C8A]/25 bg-[#102238]/55 px-1.5 py-1 text-center text-[9px] uppercase tracking-[0.12em] text-primary-300 sm:gap-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-[10px] sm:tracking-[0.2em]">
               {calendarWeekdays.map((day) => (
                 <span key={day}>{day}</span>
               ))}
             </div>
 
-            <div className="mt-2 grid flex-1 grid-cols-7 gap-2 overflow-auto pr-1">
+            <div className="mt-2 grid flex-1 grid-cols-7 gap-1 overflow-auto pr-1 sm:gap-2">
               {calendarDays.map((day) => {
                 if (day.isPlaceholder || !day.value || !day.label) {
                   return (
                     <div
                       key={day.key}
-                      className="min-h-28 rounded-xl border border-[#2E5C8A]/20 bg-primary-950/30"
+                      className="min-h-20 rounded-2xl border border-[#2E5C8A]/15 bg-[#102238]/35 sm:min-h-28"
                       aria-hidden
                     />
                   );
@@ -521,34 +542,65 @@ export default function HistoryPage() {
                     type="button"
                     onClick={() => setSelectedCalendarDate(day.value)}
                     className={cn(
-                      "flex min-h-28 flex-col justify-between rounded-xl border p-2 text-left transition",
-                      "bg-[#1B314B]",
+                      "group relative flex min-h-20 flex-col justify-between overflow-hidden rounded-2xl border p-1 text-left transition sm:min-h-28 sm:p-2",
+                      hasTrades
+                        ? "bg-linear-to-b from-[#204164]/90 to-[#17324f]/95"
+                        : "bg-[#142a40]/65",
                       isSelected
-                        ? "border-[#2E5C8A]/90 shadow-[0_10px_22px_rgba(46,92,138,0.3)]"
-                        : "border-[#2E5C8A]/35 hover:border-[#2E5C8A]/70",
-                      !hasTrades && "opacity-80"
+                        ? "border-[#8CC6FF]/85 shadow-[0_10px_24px_rgba(76,135,186,0.36)]"
+                        : "border-[#2E5C8A]/30 hover:border-[#4C87BA]/70",
+                      !hasTrades && "opacity-85"
                     )}
                   >
-                    <span className="text-sm font-semibold text-white">{day.label}</span>
-                    <div className="space-y-1 text-[11px]">
-                      <p className="text-primary-200">
-                        {t("history.calendar.trades", { count: day.stats.totalTrades })}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-green-300">
-                          <span className="h-2 w-2 rounded-full bg-green-400" aria-hidden />
-                          {day.stats.wins}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-red-300">
-                          <span className="h-2 w-2 rounded-full bg-red-400" aria-hidden />
-                          {day.stats.losses}
-                        </span>
-                        {hasResolvedTrades && (
-                          <span className={cn("font-semibold", isWinDay ? "text-green-300" : "text-red-300")}>
-                            {isWinDay ? t("history.calendar.winDay") : t("history.calendar.lossDay")}
-                          </span>
+                    <div className="flex items-center justify-between gap-1">
+                      <span
+                        className={cn(
+                          "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold sm:h-6 sm:w-6 sm:text-xs",
+                          isSelected
+                            ? "bg-white text-[#14304b]"
+                            : "bg-[#0f2236]/75 text-primary-100 group-hover:bg-[#17324f]"
                         )}
-                      </div>
+                      >
+                        {day.label}
+                      </span>
+
+                      {day.stats.totalTrades > 0 && (
+                        <span className="rounded-full border border-[#63A1D3]/45 bg-[#12314d]/85 px-1.5 py-0.5 text-[9px] font-semibold text-[#C7E4FF] sm:text-[10px]">
+                          {day.stats.totalTrades}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-auto flex items-center gap-1 sm:hidden">
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          hasTrades ? "bg-[#63A1D3]" : "bg-primary-700"
+                        )}
+                        aria-hidden
+                      />
+                      {day.stats.wins > 0 && <span className="h-1.5 w-1.5 rounded-full bg-green-400" aria-hidden />}
+                      {day.stats.losses > 0 && <span className="h-1.5 w-1.5 rounded-full bg-red-400" aria-hidden />}
+                    </div>
+
+                    <div className="mt-auto hidden flex-wrap items-center gap-1 text-[10px] sm:flex">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#14324f] px-1.5 py-0.5 text-[#C7E4FF]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#63A1D3]" aria-hidden />
+                        {day.stats.totalTrades}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-1.5 py-0.5 text-green-300">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-400" aria-hidden />
+                        {day.stats.wins}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-1.5 py-0.5 text-red-300">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-400" aria-hidden />
+                        {day.stats.losses}
+                      </span>
+                      {hasResolvedTrades && (
+                        <span className={cn("inline-flex rounded-full px-1.5 py-0.5 font-semibold", isWinDay ? "bg-green-500/15 text-green-300" : "bg-red-500/15 text-red-300")}>
+                          {isWinDay ? t("history.calendar.winDay") : t("history.calendar.lossDay")}
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
@@ -913,7 +965,20 @@ function BarChart({ data, labels, color }: BaseChartProps) {
   const min = 0;
   const yRange = max === min ? 1 : max - min;
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [isAnimated, setIsAnimated] = useState(false);
   const monthSegments = useMemo(() => getMonthSegments(labels), [labels]);
+  const animationSeed = useMemo(() => `${labels.join("|")}::${data.join("|")}`, [data, labels]);
+
+  useEffect(() => {
+    setIsAnimated(false);
+    const frame = window.requestAnimationFrame(() => {
+      setIsAnimated(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [animationSeed]);
 
   return (
     <div className="relative h-full w-full">
@@ -921,6 +986,7 @@ function BarChart({ data, labels, color }: BaseChartProps) {
         {data.map((value, idx) => {
           const barHeight = ((value - min) / yRange) * height;
           const isHover = hoverIdx === idx;
+          const tone = getBlueScaleColor(idx, data.length);
           return (
             <div
               key={`${value}-${idx}`}
@@ -930,8 +996,8 @@ function BarChart({ data, labels, color }: BaseChartProps) {
               )}
               style={{
                 height: `${barHeight}px`,
-                backgroundColor: `${color}22`,
-                borderColor: isHover ? "#ffffffb3" : `${color}55`,
+                backgroundColor: `${tone}22`,
+                borderColor: isHover ? "#ffffffb3" : `${tone}55`,
               }}
               aria-label={`${labels[idx]}: ${value}`}
               onMouseEnter={() => setHoverIdx(idx)}
@@ -939,7 +1005,16 @@ function BarChart({ data, labels, color }: BaseChartProps) {
             >
               <div
                 className="h-full w-full rounded-t-lg"
-                style={{ backgroundColor: color, opacity: isHover ? 0.95 : 0.75 }}
+                style={{
+                  transformOrigin: "bottom",
+                  transform: isAnimated ? "scaleY(1)" : "scaleY(0)",
+                  transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms, opacity 220ms ease`,
+                  backgroundImage: `linear-gradient(to top, ${tone}A8 0%, ${tone}D6 60%, rgba(196,230,255,0.9) 100%)`,
+                  opacity: isHover ? 1 : 0.9,
+                  boxShadow: isHover
+                    ? `inset 0 1px 0 rgba(255,255,255,0.52), 0 0 12px ${tone}55`
+                    : "inset 0 1px 0 rgba(255,255,255,0.3)",
+                }}
               />
             </div>
           );
@@ -973,6 +1048,18 @@ function BarChart({ data, labels, color }: BaseChartProps) {
       )}
     </div>
   );
+}
+
+const BLUE_SCALE = ["#1F3D63", "#25537F", "#2E5C8A", "#3A71A2", "#4C87BA", "#63A1D3"];
+
+function getBlueScaleColor(index: number, total: number) {
+  if (total <= 1) return BLUE_SCALE[2];
+  const position = index / (total - 1);
+  const paletteIndex = Math.min(
+    BLUE_SCALE.length - 1,
+    Math.round(position * (BLUE_SCALE.length - 1))
+  );
+  return BLUE_SCALE[paletteIndex];
 }
 
 type TooltipProps = {

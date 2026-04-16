@@ -33,9 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${manrope.variable} ${spaceGrotesk.variable} bg-primary-950 text-white antialiased`}
-      >
+      <body className={`${manrope.variable} ${spaceGrotesk.variable} text-white antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

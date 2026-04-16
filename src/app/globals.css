@@ -63,14 +63,26 @@
   }
 
   html {
-    background: rgb(var(--primary-950));
+    background:
+      radial-gradient(
+        178% 152% at 6% 6%,
+        rgb(var(--secondary-300) / 0.26) 0%,
+        rgb(var(--secondary-300) / 0) 82%
+      ),
+      radial-gradient(
+        155% 130% at 96% 12%,
+        rgb(var(--secondary-500) / 0.2) 0%,
+        rgb(var(--secondary-500) / 0) 84%
+      ),
+      linear-gradient(155deg, rgb(var(--primary-800)) 0%, rgb(var(--primary-900)) 60%, rgb(var(--primary-800)) 100%);
     color: rgb(var(--white));
     color-scheme: dark;
   }
 
   body {
     min-height: 100vh;
-    background: rgb(var(--primary-950));
+    background: inherit;
+    background-attachment: fixed;
     color: rgb(var(--white));
     font-family: var(--font-body);
   }
@@ -90,6 +102,47 @@
 @layer utilities {
   .font-display {
     font-family: var(--font-display);
+  }
+
+  /* Solidify common surface backgrounds so bordered components read better over the gradient. */
+  .bg-primary-950\/30 {
+    background-color: rgb(var(--primary-900) / 0.56);
+  }
+
+  .bg-primary-900\/40 {
+    background-color: rgb(var(--primary-700) / 0.62);
+  }
+
+  .bg-primary-900\/50 {
+    background-color: rgb(var(--primary-700) / 0.68);
+  }
+
+  .bg-primary-900\/60 {
+    background-color: rgb(var(--primary-700) / 0.74);
+  }
+
+  .bg-primary-950\/40 {
+    background-color: rgb(var(--primary-800) / 0.64);
+  }
+
+  .bg-primary-950\/50 {
+    background-color: rgb(var(--primary-800) / 0.7);
+  }
+
+  .bg-primary-950\/60 {
+    background-color: rgb(var(--primary-800) / 0.76);
+  }
+
+  .bg-primary-950\/70 {
+    background-color: rgb(var(--primary-800) / 0.82);
+  }
+
+  .bg-primary-950\/80 {
+    background-color: rgb(var(--primary-800) / 0.86);
+  }
+
+  .bg-primary-950\/95 {
+    background-color: rgb(var(--primary-900) / 0.94);
   }
 
   .skeleton-shimmer {

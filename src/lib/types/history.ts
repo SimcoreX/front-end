@@ -36,6 +36,10 @@ export type HistoryTradeItemResponse = {
 
 export type HistoryTradesSummaryResponse = {
   totalTrades: number;
+  buyTrades?: number;
+  sellTrades?: number;
+  buyPercentage?: number;
+  sellPercentage?: number;
   wins?: number;
   losses?: number;
   grossPnl?: number;
