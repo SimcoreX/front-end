@@ -45,7 +45,12 @@ export default function HistoryPage() {
   const [hasReferenceError, setHasReferenceError] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
-  const chartColor = "#2E5C8A";
+  const chartColors = {
+    pnl: "#1D9BF0",
+    trades: "#A855F7",
+    winRate: "#22C55E",
+    avgPnl: "#FBBF24",
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -430,9 +435,9 @@ export default function HistoryPage() {
           <SummaryCards
             items={[
               { label: t("history.summary.filteredTrades"), value: `${summary.totalTrades}`, hint: t("history.hints.baseCurrent") },
-              { label: t("history.summary.totalPnl"), value: formatMoney(summary.totalPnl), hint: t("history.hints.period") },
+              { label: t("history.summary.totalPnl"), value: formatMoney(summary.totalPnl), hint: t("history.hints.period"), numericValue: summary.totalPnl },
               { label: t("history.summary.winRate"), value: `${summary.winRate}%`, hint: t("history.hints.average") },
-              { label: t("history.summary.avgTrade"), value: formatMoney(summary.avgPnl), hint: t("history.hints.perTrade") },
+              { label: t("history.summary.avgTrade"), value: formatMoney(summary.avgPnl), hint: t("history.hints.perTrade"), numericValue: summary.avgPnl },
             ]}
           />
 
@@ -442,7 +447,7 @@ export default function HistoryPage() {
               subtitle={t("history.charts.performanceDaily")}
               data={chartData.pnlSeries}
               labels={chartData.labels}
-              color={chartColor}
+              color={chartColors.pnl}
               type="bar"
             />
             <ChartCard
@@ -450,7 +455,7 @@ export default function HistoryPage() {
               subtitle={t("history.charts.tradesVolume")}
               data={chartData.tradesPerDay}
               labels={chartData.labels}
-              color={chartColor}
+              color={chartColors.trades}
               type="bar"
             />
             <ChartCard
@@ -458,7 +463,7 @@ export default function HistoryPage() {
               subtitle={t("history.charts.consistency")}
               data={chartData.winRatePerDay}
               labels={chartData.labels}
-              color={chartColor}
+              color={chartColors.winRate}
               type="bar"
             />
             <ChartCard
@@ -466,7 +471,7 @@ export default function HistoryPage() {
               subtitle={t("history.charts.effectiveness")}
               data={chartData.avgPnlPerDay}
               labels={chartData.labels}
-              color={chartColor}
+              color={chartColors.avgPnl}
               type="bar"
             />
           </div>
@@ -761,6 +766,7 @@ type SummaryItem = {
   label: string;
   value: string;
   hint: string;
+  numericValue?: number;
 };
 
 function SummarySkeleton() {
@@ -804,16 +810,33 @@ function HistoryChartsSkeleton() {
 function SummaryCards({ items }: { items: SummaryItem[] }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="rounded-2xl border border-primary-800/70 bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
-        >
-          <p className="text-xs uppercase tracking-wide text-primary-300">{item.label}</p>
-          <p className="mt-1 text-2xl font-semibold text-white">{item.value}</p>
-          <p className="text-xs text-primary-300">{item.hint}</p>
-        </div>
-      ))}
+      {items.map((item) => {
+        const hasNumeric = item.numericValue !== undefined;
+        const isPositive = hasNumeric && item.numericValue! >= 0;
+        const valueColor = hasNumeric
+          ? isPositive
+            ? "text-emerald-400"
+            : "text-red-400"
+          : "text-white";
+        const cardBorder = hasNumeric
+          ? isPositive
+            ? "border-emerald-500/25"
+            : "border-red-500/25"
+          : "border-primary-800/70";
+        return (
+          <div
+            key={item.label}
+            className={cn(
+              "rounded-2xl border px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)] bg-primary-900/60",
+              cardBorder
+            )}
+          >
+            <p className="text-xs uppercase tracking-wide text-primary-300">{item.label}</p>
+            <p className={cn("mt-1 text-2xl font-semibold", valueColor)}>{item.value}</p>
+            <p className="text-xs text-primary-300">{item.hint}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -986,18 +1009,17 @@ function BarChart({ data, labels, color }: BaseChartProps) {
         {data.map((value, idx) => {
           const barHeight = ((value - min) / yRange) * height;
           const isHover = hoverIdx === idx;
-          const tone = getBlueScaleColor(idx, data.length);
           return (
             <div
               key={`${value}-${idx}`}
               className={cn(
-                "flex-1 rounded-t-lg border border-primary-800/70 bg-primary-950/70",
+                "flex-1 rounded-t-lg border",
                 isHover && "border-white/70"
               )}
               style={{
                 height: `${barHeight}px`,
-                backgroundColor: `${tone}22`,
-                borderColor: isHover ? "#ffffffb3" : `${tone}55`,
+                backgroundColor: `${color}18`,
+                borderColor: isHover ? "#ffffffb3" : `${color}50`,
               }}
               aria-label={`${labels[idx]}: ${value}`}
               onMouseEnter={() => setHoverIdx(idx)}
@@ -1009,11 +1031,11 @@ function BarChart({ data, labels, color }: BaseChartProps) {
                   transformOrigin: "bottom",
                   transform: isAnimated ? "scaleY(1)" : "scaleY(0)",
                   transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms, opacity 220ms ease`,
-                  backgroundImage: `linear-gradient(to top, ${tone}A8 0%, ${tone}D6 60%, rgba(196,230,255,0.9) 100%)`,
-                  opacity: isHover ? 1 : 0.9,
+                  backgroundImage: `linear-gradient(to top, ${color}90 0%, ${color}CC 60%, ${color}FF 100%)`,
+                  opacity: isHover ? 1 : 0.88,
                   boxShadow: isHover
-                    ? `inset 0 1px 0 rgba(255,255,255,0.52), 0 0 12px ${tone}55`
-                    : "inset 0 1px 0 rgba(255,255,255,0.3)",
+                    ? `inset 0 1px 0 rgba(255,255,255,0.45), 0 0 16px ${color}60`
+                    : "inset 0 1px 0 rgba(255,255,255,0.25)",
                 }}
               />
             </div>
@@ -1048,18 +1070,6 @@ function BarChart({ data, labels, color }: BaseChartProps) {
       )}
     </div>
   );
-}
-
-const BLUE_SCALE = ["#1F3D63", "#25537F", "#2E5C8A", "#3A71A2", "#4C87BA", "#63A1D3"];
-
-function getBlueScaleColor(index: number, total: number) {
-  if (total <= 1) return BLUE_SCALE[2];
-  const position = index / (total - 1);
-  const paletteIndex = Math.min(
-    BLUE_SCALE.length - 1,
-    Math.round(position * (BLUE_SCALE.length - 1))
-  );
-  return BLUE_SCALE[paletteIndex];
 }
 
 type TooltipProps = {
