@@ -507,7 +507,7 @@ export default function TradesPage() {
     <div className="flex flex-col gap-6">
       <PageTitle>{t("nav.trades")}</PageTitle>
 
-      <div className="overflow-hidden rounded-2xl border border-primary-800/70 bg-primary-900/50 shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+      <div className="overflow-hidden rounded-2xl bg-primary-900/50 shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
         <div className="flex gap-3 bg-primary-900/50 px-3 pt-3">
           {tabs.map((tab) => {
             const isActive = tab.key === activeTab;
@@ -533,7 +533,7 @@ export default function TradesPage() {
         <div className="p-6">
           {activeTab === "summary" && (
             <div className="space-y-6 text-sm text-primary-100">
-              <div className="flex flex-col gap-4 rounded-2xl border border-primary-800/70 bg-primary-900/60 p-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-4 rounded-2xl bg-primary-900/60 p-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <p className="text-base font-semibold text-white">{t("trades.summary.title")}</p>
                   <p className="text-primary-200">{t("trades.summary.description")}</p>
@@ -641,7 +641,7 @@ export default function TradesPage() {
                       return (
                         <div
                           key={session.id}
-                          className="rounded-xl border border-primary-800/70 bg-primary-950/50 p-4"
+                          className="rounded-xl bg-primary-950/50 p-4"
                         >
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <p className="text-sm font-semibold text-white">{session.name}</p>
@@ -896,7 +896,7 @@ function MetricCard({
   tone?: "positive" | "negative";
 }) {
   return (
-    <div className="rounded-2xl border border-primary-800/70 bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+    <div className="rounded-2xl bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
       <p className="text-xs uppercase tracking-wide text-primary-300">{label}</p>
       <p
         className={cn(
@@ -919,7 +919,7 @@ function SummaryTabSkeleton() {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={`trades-summary-skeleton-metric-${index}`}
-            className="rounded-2xl border border-primary-800/70 bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+            className="rounded-2xl bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
           >
             <Skeleton className="h-3 w-24 rounded" />
             <Skeleton className="mt-3 h-8 w-16 rounded" />
@@ -932,7 +932,7 @@ function SummaryTabSkeleton() {
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={`trades-summary-skeleton-chart-${index}`}
-            className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+            className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
           >
             <Skeleton className="h-3 w-24 rounded" />
             <Skeleton className="mt-2 h-6 w-44 rounded" />
@@ -950,7 +950,7 @@ function SessionsTabSkeleton() {
       {Array.from({ length: SESSIONS_PAGE_SIZE }).map((_, index) => (
         <div
           key={`trades-sessions-skeleton-${index}`}
-          className="rounded-xl border border-primary-800/70 bg-primary-950/50 p-4"
+          className="rounded-xl bg-primary-950/50 p-4"
         >
           <div className="flex items-center justify-between gap-2">
             <Skeleton className="h-4 w-44 rounded" />
@@ -993,7 +993,7 @@ function ChartCard({
 }: ChartCardProps) {
 
   return (
-    <div className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+    <div className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
       <div>
         <div>
           <p className="text-sm text-primary-300">{subtitle}</p>
@@ -1003,7 +1003,7 @@ function ChartCard({
 
       <div className="mt-4 h-56">
         {type === "horizontal-bar" ? (
-          <TradesBySymbolChart data={data} labels={labels} valueSuffix={valueSuffix} />
+          <TradesBySymbolChart data={data} labels={labels} valueSuffix={valueSuffix} color={color} />
         ) : (
           <BarChart data={data} color={color} labels={labels} valueSuffix={valueSuffix} />
         )}
@@ -1045,34 +1045,29 @@ function BarChart({ data, labels, color, valueSuffix = "" }: BarChartProps) {
         {data.map((value, idx) => {
           const barHeight = ((value - min) / yRange) * height;
           const isHover = hoverIdx === idx;
-          const tone = getBlueScaleColor(idx, data.length);
           return (
             <div
               key={`${value}-${idx}`}
-              className={cn(
-                "flex-1 rounded-t-lg border border-primary-800/70 bg-primary-950/70",
-                isHover && "border-white/70"
-              )}
+              className="flex-1 rounded-t-sm"
               style={{
                 height: `${barHeight}px`,
-                backgroundColor: `${tone}22`,
-                borderColor: isHover ? "#ffffffb3" : `${tone}44`,
+                position: "relative",
               }}
               aria-label={`${labels[idx]}: ${value}`}
               onMouseEnter={() => setHoverIdx(idx)}
               onMouseLeave={() => setHoverIdx(null)}
             >
               <div
-                className="h-full w-full rounded-t-lg"
+                className="h-full w-full rounded-t-sm"
                 style={{
                   transformOrigin: "bottom",
                   transform: isAnimated ? "scaleY(1)" : "scaleY(0)",
-                  transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms, opacity 220ms ease`,
-                  backgroundImage: `linear-gradient(to top, ${tone}A4 0%, ${tone}D4 60%, rgba(196,230,255,0.9) 100%)`,
-                  opacity: isHover ? 1 : 0.9,
+                  transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms`,
+                  backgroundImage: `linear-gradient(to top, ${color}08 0%, ${color}50 40%, ${color}CC 75%, ${color}FF 100%)`,
+                  opacity: isHover ? 1 : 0.82,
                   boxShadow: isHover
-                    ? `inset 0 1px 0 rgba(255,255,255,0.52), 0 0 12px ${tone}55`
-                    : "inset 0 1px 0 rgba(255,255,255,0.3)",
+                    ? `inset 0 1px 0 rgba(255,255,255,0.3), 0 0 18px ${color}50`
+                    : `inset 0 1px 0 rgba(255,255,255,0.12)`,
                 }}
               />
             </div>

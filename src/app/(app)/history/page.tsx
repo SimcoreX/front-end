@@ -328,7 +328,7 @@ export default function HistoryPage() {
       {isFiltersOpen && (
         <div
           id="history-filters-panel"
-          className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-5 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+          className="rounded-2xl bg-primary-900/60 p-5 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
         >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -775,7 +775,7 @@ function SummarySkeleton() {
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={`history-summary-skeleton-${index}`}
-          className="rounded-2xl border border-primary-800/70 bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+          className="rounded-2xl bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
         >
           <Skeleton className="h-3 w-28 rounded" />
           <Skeleton className="mt-3 h-8 w-20 rounded" />
@@ -792,7 +792,7 @@ function HistoryChartsSkeleton() {
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={`history-chart-skeleton-${index}`}
-          className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+          className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
         >
           <div className="flex items-center justify-between">
             <div className="space-y-2">
@@ -818,18 +818,10 @@ function SummaryCards({ items }: { items: SummaryItem[] }) {
             ? "text-emerald-400"
             : "text-red-400"
           : "text-white";
-        const cardBorder = hasNumeric
-          ? isPositive
-            ? "border-emerald-500/25"
-            : "border-red-500/25"
-          : "border-primary-800/70";
         return (
           <div
             key={item.label}
-            className={cn(
-              "rounded-2xl border px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)] bg-primary-900/60",
-              cardBorder
-            )}
+            className="rounded-2xl px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)] bg-primary-900/60"
           >
             <p className="text-xs uppercase tracking-wide text-primary-300">{item.label}</p>
             <p className={cn("mt-1 text-2xl font-semibold", valueColor)}>{item.value}</p>
@@ -852,7 +844,7 @@ type ChartCardProps = {
 
 function ChartCard({ title, subtitle, data, labels, color, type }: ChartCardProps) {
   return (
-    <div className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+    <div className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
       <div>
         <div>
           <p className="text-sm text-primary-300">{subtitle}</p>
@@ -1012,30 +1004,26 @@ function BarChart({ data, labels, color }: BaseChartProps) {
           return (
             <div
               key={`${value}-${idx}`}
-              className={cn(
-                "flex-1 rounded-t-lg border",
-                isHover && "border-white/70"
-              )}
+              className="flex-1 rounded-t-sm"
               style={{
                 height: `${barHeight}px`,
-                backgroundColor: `${color}18`,
-                borderColor: isHover ? "#ffffffb3" : `${color}50`,
+                position: "relative",
               }}
               aria-label={`${labels[idx]}: ${value}`}
               onMouseEnter={() => setHoverIdx(idx)}
               onMouseLeave={() => setHoverIdx(null)}
             >
               <div
-                className="h-full w-full rounded-t-lg"
+                className="h-full w-full rounded-t-sm"
                 style={{
                   transformOrigin: "bottom",
                   transform: isAnimated ? "scaleY(1)" : "scaleY(0)",
-                  transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms, opacity 220ms ease`,
-                  backgroundImage: `linear-gradient(to top, ${color}90 0%, ${color}CC 60%, ${color}FF 100%)`,
-                  opacity: isHover ? 1 : 0.88,
+                  transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms`,
+                  backgroundImage: `linear-gradient(to top, ${color}08 0%, ${color}50 40%, ${color}CC 75%, ${color}FF 100%)`,
+                  opacity: isHover ? 1 : 0.82,
                   boxShadow: isHover
-                    ? `inset 0 1px 0 rgba(255,255,255,0.45), 0 0 16px ${color}60`
-                    : "inset 0 1px 0 rgba(255,255,255,0.25)",
+                    ? `inset 0 1px 0 rgba(255,255,255,0.3), 0 0 18px ${color}50`
+                    : `inset 0 1px 0 rgba(255,255,255,0.12)`,
                 }}
               />
             </div>

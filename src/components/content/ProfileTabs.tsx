@@ -392,7 +392,7 @@ export function ProfileTabs() {
     subscriptionInvoicesHasNextPage && !isLoadingSubscription && !isLoadingSubscriptionInvoicesPage;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-primary-800/70 bg-primary-900/50 shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+    <div className="overflow-hidden rounded-2xl bg-primary-900/50 shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
       <div className="flex gap-3 bg-primary-900/50 px-3 pt-3">
         {tabs.map((tab) => {
           const isActive = tab.key === activeTab;
@@ -585,15 +585,15 @@ export function ProfileTabs() {
                 )}
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="rounded-xl border border-primary-800/70 bg-primary-950/40 p-4">
+                  <div className="rounded-xl bg-primary-950/40 p-4">
                     <p className="text-primary-300">{t("profile.subscription.plan")}</p>
                     <p className="text-lg font-semibold text-white">{subscriptionCurrent?.plan ?? "--"}</p>
                   </div>
-                  <div className="rounded-xl border border-primary-800/70 bg-primary-950/40 p-4">
+                  <div className="rounded-xl bg-primary-950/40 p-4">
                     <p className="text-primary-300">{t("profile.subscription.price")}</p>
                     <p className="text-lg font-semibold text-white">{formatCurrency(subscriptionCurrent?.price)}</p>
                   </div>
-                  <div className="rounded-xl border border-primary-800/70 bg-primary-950/40 p-4">
+                  <div className="rounded-xl bg-primary-950/40 p-4">
                     <p className="text-primary-300">{t("profile.subscription.renewsIn")}</p>
                     <p className="text-lg font-semibold text-white">
                       {typeof subscriptionCurrent?.renewsInDays === "number"
@@ -607,7 +607,7 @@ export function ProfileTabs() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-xl border border-primary-800/70 bg-primary-950/40 p-4 space-y-2">
+                  <div className="rounded-xl bg-primary-950/40 p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-primary-300">{t("profile.subscription.status")}</span>
                       <span
@@ -639,7 +639,7 @@ export function ProfileTabs() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-primary-800/70 bg-primary-950/40 p-4">
+                  <div className="rounded-xl bg-primary-950/40 p-4">
                     <p className="mb-3 text-primary-300">{t("profile.subscription.invoicesTitle")}</p>
                     <div className="space-y-2">
                       {isLoadingSubscriptionInvoicesPage &&
@@ -829,7 +829,7 @@ function SubscriptionSkeleton() {
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={`subscription-top-skeleton-${index}`}
-            className="rounded-xl border border-primary-800/70 bg-primary-950/40 p-4"
+            className="rounded-xl bg-primary-950/40 p-4"
           >
             <Skeleton className="h-3 w-20 rounded" />
             <Skeleton className="mt-3 h-7 w-24 rounded" />
@@ -839,7 +839,7 @@ function SubscriptionSkeleton() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-primary-800/70 bg-primary-950/40 p-4 space-y-3">
+        <div className="rounded-xl bg-primary-950/40 p-4 space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={`subscription-status-skeleton-${index}`} className="flex items-center justify-between gap-2">
               <Skeleton className="h-3 w-28 rounded" />
@@ -848,7 +848,7 @@ function SubscriptionSkeleton() {
           ))}
         </div>
 
-        <div className="rounded-xl border border-primary-800/70 bg-primary-950/40 p-4 space-y-3">
+        <div className="rounded-xl bg-primary-950/40 p-4 space-y-3">
           <Skeleton className="h-4 w-40 rounded" />
           {Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={`subscription-invoice-skeleton-${index}`} className="h-14 w-full rounded-lg" />

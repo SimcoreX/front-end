@@ -7,9 +7,10 @@ type TradesBySymbolChartProps = {
   data: number[];
   labels: string[];
   valueSuffix?: string;
+  color?: string;
 };
 
-export function TradesBySymbolChart({ data, labels, valueSuffix = "" }: TradesBySymbolChartProps) {
+export function TradesBySymbolChart({ data, labels, valueSuffix = "", color = "#1D9BF0" }: TradesBySymbolChartProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [isAnimated, setIsAnimated] = useState(false);
   const max = Math.max(0, ...data);
@@ -36,7 +37,6 @@ export function TradesBySymbolChart({ data, labels, valueSuffix = "" }: TradesBy
           const normalizedValue = Math.max(0, Number(value) || 0);
           const widthPercent = Math.max(0, Math.min(100, (normalizedValue / denominator) * 100));
           const isHover = hoverIdx === idx;
-          const tone = getBlueScaleColor(idx, data.length);
 
           return (
             <div
@@ -51,23 +51,23 @@ export function TradesBySymbolChart({ data, labels, valueSuffix = "" }: TradesBy
 
               <div
                 className={cn(
-                  "relative h-6 flex-1 overflow-hidden rounded-lg border border-primary-800/70 bg-primary-950/70",
-                  isHover && "border-white/70"
+                  "relative h-6 flex-1 overflow-hidden rounded-r-lg",
+                  isHover && "border border-white/70"
                 )}
                 aria-label={`${labels[idx]}: ${formatValue(normalizedValue)}`}
               >
                 <div
-                  className="h-full rounded-lg"
+                  className="h-full rounded-r-lg"
                   style={{
                     width: `${widthPercent}%`,
                     transformOrigin: "left",
                     transform: isAnimated ? "scaleX(1)" : "scaleX(0)",
-                    transition: `transform 650ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 55}ms, opacity 220ms ease`,
-                    backgroundImage: `linear-gradient(to right, ${tone}A8 0%, ${tone}D8 65%, rgba(196,230,255,0.9) 100%)`,
-                    opacity: isHover ? 1 : 0.9,
+                    transition: `transform 650ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 55}ms`,
+                    backgroundImage: `linear-gradient(to right, ${color}08 0%, ${color}50 40%, ${color}CC 75%, ${color}FF 100%)`,
+                    opacity: isHover ? 1 : 0.82,
                     boxShadow: isHover
-                      ? `inset 0 1px 0 rgba(255,255,255,0.55), 0 0 10px ${tone}55`
-                      : "inset 0 1px 0 rgba(255,255,255,0.3)",
+                      ? `inset 0 1px 0 rgba(255,255,255,0.3), 0 0 18px ${color}50`
+                      : `inset 0 1px 0 rgba(255,255,255,0.12)`,
                   }}
                 />
               </div>
@@ -88,16 +88,4 @@ export function TradesBySymbolChart({ data, labels, valueSuffix = "" }: TradesBy
       )}
     </div>
   );
-}
-
-const BLUE_SCALE = ["#1F3D63", "#25537F", "#2E5C8A", "#3A71A2", "#4C87BA", "#63A1D3"];
-
-function getBlueScaleColor(index: number, total: number) {
-  if (total <= 1) return BLUE_SCALE[2];
-  const position = index / (total - 1);
-  const paletteIndex = Math.min(
-    BLUE_SCALE.length - 1,
-    Math.round(position * (BLUE_SCALE.length - 1))
-  );
-  return BLUE_SCALE[paletteIndex];
 }

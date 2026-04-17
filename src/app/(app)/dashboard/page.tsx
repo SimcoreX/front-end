@@ -673,7 +673,7 @@ function DashboardSkeleton() {
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={`summary-skeleton-${index}`}
-            className="rounded-2xl border border-primary-800/70 bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+            className="rounded-2xl bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
           >
             <Skeleton className="h-3 w-28 rounded" />
             <Skeleton className="mt-3 h-8 w-20 rounded" />
@@ -686,7 +686,7 @@ function DashboardSkeleton() {
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={`chart-skeleton-${index}`}
-            className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+            className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
           >
             <div className="flex items-center justify-between">
               <div className="space-y-2">
@@ -1217,7 +1217,7 @@ function SummaryCards({ items }: { items: SummaryItem[] }) {
       {items.map((item) => (
         <div
           key={item.label}
-          className="rounded-2xl border border-primary-800/70 bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+          className="rounded-2xl bg-primary-900/60 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
         >
           <p className="text-xs uppercase tracking-wide text-primary-300">{item.label}</p>
           <p className="mt-1 text-2xl font-semibold text-white">{item.value}</p>
@@ -1242,14 +1242,14 @@ type ChartCardProps = {
 
 function ChartCard({ title, data, labels, color, type, valueSuffix, yAxisTicks, forceMax, barGradient }: ChartCardProps) {
   return (
-    <div className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+    <div className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
       <p className="text-lg font-semibold text-white">{title}</p>
 
       <div className="mt-4 h-56">
         {type === "line" ? (
           <LineChart data={data} color={color} labels={labels} />
         ) : type === "horizontal-bar" ? (
-          <TradesBySymbolChart data={data} labels={labels} valueSuffix={valueSuffix} />
+          <TradesBySymbolChart data={data} labels={labels} valueSuffix={valueSuffix} color={color} />
         ) : (
           <BarChart
             data={data}
@@ -1434,7 +1434,7 @@ function BarChart({ data, labels, color, valueSuffix, yAxisTicks, forceMax, barG
                 return (
                   <div
                     key={`winrate-axis-${tick}`}
-                    className="absolute right-0 border-t border-dashed border-primary-700/50"
+                    className="absolute right-0 border-t border-dashed border-zinc-500/24"
                     style={{
                       left: `${axisOffset}px`,
                       bottom: `${normalized * 100}%`,
@@ -1455,46 +1455,30 @@ function BarChart({ data, labels, color, valueSuffix, yAxisTicks, forceMax, barG
           const safeValue = Math.max(min, Math.min(value, max));
           const barHeightPercent = ((safeValue - min) / yRange) * 100;
           const isHover = hoverIdx === idx;
-          const tone = getBlueScaleColor(idx, data.length);
           return (
             <div
               key={`${value}-${idx}`}
-              className={cn(
-                "flex-1 rounded-t-lg border border-primary-800/70 bg-primary-950/70",
-                isHover && "border-white/70"
-              )}
+              className="flex-1 rounded-t-sm"
               style={{
                 height: `${barHeightPercent}%`,
-                backgroundColor: `${tone}22`,
-                borderColor: isHover ? "#ffffffb3" : `${tone}44`,
+                position: "relative",
               }}
               aria-label={`${labels[idx]}: ${formatValue(value)}`}
               onMouseEnter={() => setHoverIdx(idx)}
               onMouseLeave={() => setHoverIdx(null)}
             >
               <div
-                className="h-full w-full rounded-t-lg"
-                style={
-                  barGradient
-                    ? {
-                        transformOrigin: "bottom",
-                        transform: isAnimated ? "scaleY(1)" : "scaleY(0)",
-                        transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms, opacity 220ms ease`,
-                        backgroundImage: `linear-gradient(to top, ${tone}AA 0%, ${tone}D8 58%, rgba(196,230,255,0.92) 100%)`,
-                        opacity: isHover ? 1 : 0.93,
-                        boxShadow: isHover
-                          ? `inset 0 1px 0 rgba(255,255,255,0.55), 0 0 14px ${tone}66`
-                          : "inset 0 1px 0 rgba(255,255,255,0.32)",
-                      }
-                    : {
-                        transformOrigin: "bottom",
-                        transform: isAnimated ? "scaleY(1)" : "scaleY(0)",
-                        transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms, opacity 220ms ease`,
-                        backgroundImage: `linear-gradient(to top, ${tone}9F 0%, ${tone}CF 62%, rgba(193,228,255,0.85) 100%)`,
-                        opacity: isHover ? 0.98 : 0.88,
-                        boxShadow: isHover ? `0 0 12px ${tone}4D` : "none",
-                      }
-                }
+                className="h-full w-full rounded-t-sm"
+                style={{
+                  transformOrigin: "bottom",
+                  transform: isAnimated ? "scaleY(1)" : "scaleY(0)",
+                  transition: `transform 640ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 45}ms`,
+                  backgroundImage: `linear-gradient(to top, ${color}08 0%, ${color}50 40%, ${color}CC 75%, ${color}FF 100%)`,
+                  opacity: isHover ? 1 : 0.82,
+                  boxShadow: isHover
+                    ? `inset 0 1px 0 rgba(255,255,255,0.3), 0 0 18px ${color}50`
+                    : `inset 0 1px 0 rgba(255,255,255,0.12)`,
+                }}
               />
             </div>
           );
