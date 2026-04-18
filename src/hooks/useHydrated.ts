@@ -1,9 +1,5 @@
-import { useSyncExternalStore } from "react";
-
-function subscribe() {
-  return () => {};
-}
+import { useAuthStore } from "@/stores/authStore";
 
 export function useHydrated() {
-  return useSyncExternalStore(subscribe, () => true, () => false);
+  return useAuthStore((state) => state.hydrated);
 }
