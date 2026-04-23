@@ -462,6 +462,16 @@ export function DashboardSummaryContent() {
     },
   ];
 
+  const totalTakenTrades = Math.max(0, tradesTakenSummary.buyTrades) + Math.max(0, tradesTakenSummary.sellTrades);
+  const buyTakenTradeShare =
+    totalTakenTrades > 0
+      ? (Math.max(0, tradesTakenSummary.buyTrades) / totalTakenTrades) * 100
+      : 0;
+  const sellTakenTradeShare =
+    totalTakenTrades > 0
+      ? (Math.max(0, tradesTakenSummary.sellTrades) / totalTakenTrades) * 100
+      : 0;
+
   return (
     <div className="flex flex-col gap-6">
       {hasError && (
@@ -489,13 +499,25 @@ export function DashboardSummaryContent() {
                 hint: hasTradesTakenError
                   ? t("dashboard.summary.tradesTakenError")
                   : (
-                      <span className="inline-flex flex-wrap items-center gap-1.5">
-                        <span className="font-semibold text-emerald-400">
-                          Buys {formatPercentagePtBr(tradesTakenSummary.buyPercentage)}
+                      <span className="inline-flex w-full flex-col gap-2">
+                        <span className="inline-flex flex-wrap items-center gap-1.5">
+                          <span className="font-semibold text-sky-400">
+                            Buys {formatPercentagePtBr(tradesTakenSummary.buyPercentage)}
+                          </span>
+                          <span className="text-primary-500">-</span>
+                          <span className="font-semibold text-red-400">
+                            Sells {formatPercentagePtBr(tradesTakenSummary.sellPercentage)}
+                          </span>
                         </span>
-                        <span className="text-primary-500">-</span>
-                        <span className="font-semibold text-red-400">
-                          Sells {formatPercentagePtBr(tradesTakenSummary.sellPercentage)}
+                        <span className="relative h-2 w-full overflow-hidden rounded-full bg-primary-800/80">
+                          <span
+                            className="absolute inset-y-0 left-0 bg-sky-500/90"
+                            style={{ width: `${buyTakenTradeShare}%` }}
+                          />
+                          <span
+                            className="absolute inset-y-0 right-0 bg-red-500/85"
+                            style={{ width: `${sellTakenTradeShare}%` }}
+                          />
                         </span>
                       </span>
                     ),

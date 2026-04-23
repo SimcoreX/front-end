@@ -18,8 +18,8 @@ export const NAV_ITEMS: NavItem[] = [
     Icon: HouseIcon,
   },
   {
-    key: "nav.history",
-    href: "/history",
+    key: "nav.stats",
+    href: "/stats",
     Icon: ClockCounterClockwiseIcon,
   },
 ];

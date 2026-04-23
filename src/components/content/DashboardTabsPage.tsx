@@ -6,6 +6,7 @@ import { SelectField } from "@/components/forms/SelectField";
 import { TextField } from "@/components/forms/TextField";
 import { Button } from "@/components/ui/Button";
 import { DashboardSummaryContent } from "@/components/content/DashboardSummaryContent";
+import { UnderConstruction } from "@/components/content/UnderConstruction";
 import { TradesBySymbolChart } from "@/components/charts/TradesBySymbolChart";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getMarketSymbols } from "@/lib/api/reference";
@@ -24,6 +25,7 @@ import { useTranslation } from "react-i18next";
 const tabs = [
   { key: "summary", labelKey: "trades.tabs.summary" },
   { key: "sessions", labelKey: "trades.tabs.sessions" },
+  { key: "journal", labelKey: "trades.tabs.journal" },
 ] as const;
 
 const SESSIONS_PAGE_SIZE = 5;
@@ -676,6 +678,15 @@ export function DashboardTabsPage() {
                   </>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === "journal" && (
+            <div className="space-y-6 text-sm text-primary-100">
+              <div className="space-y-2">
+                <p className="font-semibold text-white">{t("trades.tabs.journal")}</p>
+              </div>
+              <UnderConstruction />
             </div>
           )}
         </div>

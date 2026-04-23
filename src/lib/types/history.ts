@@ -12,19 +12,20 @@ export type HistoryTradesQuery = {
 
 export type HistoryTradeItemResponse = {
   id: string;
-  symbol?: string;
+  symbol?: string | null;
   side?: "buy" | "sell" | string;
   performance?: "open" | "win" | "loss" | "breakeven" | string;
   status?: "open" | "closed" | string;
-  grossPnl?: number;
-  netPnl?: number;
-  pnl?: number;
-  openedAt?: string;
+  grossPnl?: number | null;
+  netPnl?: number | null;
+  pnl?: number | null;
+  openedAt?: string | null;
   closedAt?: string | null;
-  createdAt?: string;
-  sessionId?: string;
+  createdAt?: string | null;
+  sessionId?: string | null;
   session?:
     | string
+    | null
     | {
         id?: string;
         name?: string;
@@ -34,27 +35,96 @@ export type HistoryTradeItemResponse = {
       };
 };
 
+export type HistoryOutcomeCardSummaryResponse = {
+  total?: number | null;
+  bestPnl?: number | null;
+  worstPnl?: number | null;
+  averagePnl?: number | null;
+  averageDurationMs?: number | null;
+  maxConsecutive?: number | null;
+  avgConsecutive?: number | null;
+};
+
+export type HistoryOutcomeCardsSummaryResponse = {
+  winners?: HistoryOutcomeCardSummaryResponse | null;
+  losers?: HistoryOutcomeCardSummaryResponse | null;
+};
+
 export type HistoryTradesSummaryResponse = {
   totalTrades: number;
-  buyTrades?: number;
-  sellTrades?: number;
-  buyPercentage?: number;
-  sellPercentage?: number;
-  wins?: number;
-  losses?: number;
-  grossPnl?: number;
-  netPnl?: number;
+  buyTrades?: number | null;
+  sellTrades?: number | null;
+  buyPercentage?: number | null;
+  sellPercentage?: number | null;
+  wins?: number | null;
+  losses?: number | null;
+  grossPnl?: number | null;
+  netPnl?: number | null;
+  outcomeCards?: HistoryOutcomeCardsSummaryResponse | null;
 };
 
 export type HistoryTradesApiResponse = {
-  page: number;
+  page?: number;
   limit?: number;
   pageSize?: number;
-  total: number;
+  total?: number;
   totalPages?: number;
   hasNextPage?: boolean;
-  summary: HistoryTradesSummaryResponse;
-  data: HistoryTradeItemResponse[];
+  summary?: HistoryTradesSummaryResponse | null;
+  data?: HistoryTradeItemResponse[] | null;
+};
+
+export type HistoryOutcomeCardSummaryViewModel = {
+  total: number | null;
+  bestPnl: number | null;
+  worstPnl: number | null;
+  averagePnl: number | null;
+  averageDurationMs: number | null;
+  maxConsecutive: number | null;
+  avgConsecutive: number | null;
+};
+
+export type HistoryOutcomeCardsSummaryViewModel = {
+  winners: HistoryOutcomeCardSummaryViewModel;
+  losers: HistoryOutcomeCardSummaryViewModel;
+};
+
+export type HistoryTradeItemViewModel = {
+  id: string;
+  symbol: string | null;
+  side: string | null;
+  performance: string | null;
+  status: string | null;
+  grossPnl: number | null;
+  netPnl: number | null;
+  pnl: number | null;
+  openedAt: string | null;
+  closedAt: string | null;
+  createdAt: string | null;
+  sessionId: string | null;
+  session:
+    | string
+    | {
+        id?: string;
+        name?: string;
+        marketSymbol?: string;
+        timeframe?: string;
+        status?: string;
+      }
+    | null;
+};
+
+export type HistoryTradesSummaryViewModel = {
+  totalTrades: number;
+  buyTrades: number | null;
+  sellTrades: number | null;
+  buyPercentage: number | null;
+  sellPercentage: number | null;
+  wins: number | null;
+  losses: number | null;
+  grossPnl: number | null;
+  netPnl: number | null;
+  outcomeCards: HistoryOutcomeCardsSummaryViewModel | null;
 };
 
 export type HistoryTradesResponse = {
@@ -62,6 +132,6 @@ export type HistoryTradesResponse = {
   pageSize: number;
   total: number;
   hasNextPage: boolean;
-  summary: HistoryTradesSummaryResponse;
-  data: HistoryTradeItemResponse[];
+  summary: HistoryTradesSummaryViewModel;
+  data: HistoryTradeItemViewModel[];
 };

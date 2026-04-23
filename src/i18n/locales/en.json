@@ -23,14 +23,14 @@
   "nav": {
     "dashboard": "Dashboard",
     "trades": "Markets",
-    "history": "History",
+    "stats": "Stats",
     "news": "News",
     "logout": "Log out",
     "language": "Language",
     "profile": "Profile"
   },
   "history": {
-    "title": "History",
+    "title": "Stats",
     "overview": "Consolidated analysis",
     "filtersTitle": "Performance and period filters",
     "loading": "Loading history data...",
@@ -98,6 +98,57 @@
       "avgPnlDaily": "Average PnL per day",
       "effectiveness": "Effectiveness",
       "filteredData": "Filtered data"
+    },
+    "pnlPanel": {
+      "title": "Profit and loss",
+      "subtitle": "Over time",
+      "range": {
+        "all": "All",
+        "day": "Day",
+        "hour": "1 Hour",
+        "min15": "15 Min"
+      },
+      "metrics": {
+        "totalPnl": "Total P/L",
+        "accountBalance": "Account balance",
+        "winRate": "Win rate",
+        "totalTrades": "Total trades",
+        "winsLosses": "{{wins}}W / {{losses}}L",
+        "breakevenTrades": "Breakeven trades",
+        "thresholdValue": "Threshold: {{value}}"
+      },
+      "threshold": {
+        "label": "Breakeven threshold",
+        "apply": "Apply"
+      },
+      "empty": "No PnL data for this period."
+    },
+    "outcomeCards": {
+      "winners": {
+        "title": "Winners",
+        "totalWinners": "Total winners",
+        "bestWin": "Best win",
+        "averageWin": "Average win",
+        "averageDuration": "Average duration",
+        "maxConsecutiveWins": "Max consecutive wins",
+        "avgConsecutiveWins": "Avg consecutive wins"
+      },
+      "losers": {
+        "title": "Losers",
+        "totalLosers": "Total losers",
+        "worstLoss": "Worst loss",
+        "averageLoss": "Average loss",
+        "averageDuration": "Average duration",
+        "maxConsecutiveLosses": "Max consecutive losses",
+        "avgConsecutiveLosses": "Avg consecutive losses"
+      }
+    },
+    "layout": {
+      "edit": "Personalize layout",
+      "done": "Finish personalization",
+      "reset": "Reset layout",
+      "hint": "Drag cards by the handle to reorder.",
+      "dragAria": "Drag section {{section}}"
     }
   },
   "trades": {
@@ -174,6 +225,7 @@
     "tabs": {
       "summary": "Summary",
       "sessions": "Sessions",
+      "journal": "Journal",
       "summaryHeading": "Market summary",
       "summaryDescription": "This view will be configured with the main asset data.",
       "sessionsHeading": "Market sessions",
