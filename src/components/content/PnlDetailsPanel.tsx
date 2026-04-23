@@ -152,7 +152,7 @@ export function PnlDetailsPanel({ trades, isLoading = false, initialBalance = 15
 
     const tickCount = 4;
     const ticks = Array.from({ length: tickCount }).map((_, idx) => {
-      const ratio = tickCount === 1 ? 0 : idx / (tickCount - 1);
+      const ratio = idx / (tickCount - 1);
       const index = Math.round(ratio * (labels.length - 1));
       return { index, label: labels[index] };
     });

@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import type { FocusEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react";
-import type { HistoryTradeItemResponse } from "@/lib/types/history";
+import type { HistoryTradeItemViewModel } from "@/lib/types/history";
 import type { MarketSymbolItem } from "@/lib/types/reference";
 import type {
   DashboardOverviewResponse,
@@ -1014,7 +1014,7 @@ async function getTradingDaysChartForLastSixMonths(): Promise<TradingDaysChartDa
   };
 }
 
-function registerTradeDay(daysByMonth: Map<string, Set<string>>, trade: HistoryTradeItemResponse) {
+function registerTradeDay(daysByMonth: Map<string, Set<string>>, trade: HistoryTradeItemViewModel) {
   const referenceDate = trade.closedAt ?? trade.openedAt ?? trade.createdAt;
   if (!referenceDate) return;
 
@@ -1096,11 +1096,11 @@ function getTradesTakenFallback(): TradesTakenSummary {
 }
 
 function normalizeTradesTakenSummary(summary: {
-  totalTrades?: number;
-  buyTrades?: number;
-  sellTrades?: number;
-  buyPercentage?: number;
-  sellPercentage?: number;
+  totalTrades?: number | null;
+  buyTrades?: number | null;
+  sellTrades?: number | null;
+  buyPercentage?: number | null;
+  sellPercentage?: number | null;
 } | undefined): TradesTakenSummary {
   const fallback = getTradesTakenFallback();
   if (!summary) return fallback;
