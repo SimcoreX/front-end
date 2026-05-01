@@ -1193,12 +1193,21 @@ function normalizeTradesTakenSummary(summary: {
     sellTrades = Math.max(0, normalizedTotalTrades - resolvedBuyTrades);
   }
 
+  const normalizedBuyTrades =
+    buyTrades !== null && Number.isFinite(buyTrades)
+      ? Math.max(0, Math.round(buyTrades))
+      : fallback.buyTrades;
+  const normalizedSellTrades =
+    sellTrades !== null && Number.isFinite(sellTrades)
+      ? Math.max(0, Math.round(sellTrades))
+      : fallback.sellTrades;
+
   return {
     totalTrades: Number.isFinite(normalizedTotalTrades) ? normalizedTotalTrades : fallback.totalTrades,
     buyPercentage: Number.isFinite(buyPercentage) ? buyPercentage : fallback.buyPercentage,
     sellPercentage: Number.isFinite(sellPercentage) ? sellPercentage : fallback.sellPercentage,
-    buyTrades: Number.isFinite(buyTrades) ? Math.max(0, Math.round(buyTrades)) : fallback.buyTrades,
-    sellTrades: Number.isFinite(sellTrades) ? Math.max(0, Math.round(sellTrades)) : fallback.sellTrades,
+    buyTrades: normalizedBuyTrades,
+    sellTrades: normalizedSellTrades,
   };
 }
 

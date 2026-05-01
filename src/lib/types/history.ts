@@ -14,8 +14,8 @@ export type HistoryTradeItemResponse = {
   id: string;
   symbol?: string | null;
   side?: "buy" | "sell" | string;
-  performance?: "open" | "win" | "loss" | "breakeven" | string;
-  status?: "open" | "closed" | string;
+  performance?: "open" | "win" | "loss" | "breakeven" | string | null;
+  status?: "open" | "closed" | string | null;
   grossPnl?: number | null;
   netPnl?: number | null;
   pnl?: number | null;

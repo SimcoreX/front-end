@@ -240,12 +240,8 @@ export function SessionReplayPage({ sessionId }: { sessionId: string }) {
       return formatTickerCurrency(balanceValue);
     }
 
-    if (typeof session?.accountBalanceStart === "string") {
-      return session.accountBalanceStart.trim();
-    }
-
     return "";
-  }, [balanceValue, session?.accountBalanceStart]);
+  }, [balanceValue]);
 
   const realizedPnlValue = useMemo(
     () => toFiniteNumber(session?.netPnl),
@@ -808,10 +804,12 @@ function extractSymbolFromTradingViewMessage(data: unknown): string | null {
   let payload: unknown = data;
 
   if (typeof payload === "string") {
+    const rawPayload = payload;
+
     try {
-      payload = JSON.parse(payload);
+      payload = JSON.parse(rawPayload);
     } catch {
-      const direct = findSymbolInString(payload);
+      const direct = findSymbolInString(rawPayload);
       return direct;
     }
   }

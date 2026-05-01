@@ -1824,7 +1824,9 @@ export default function HistoryPage() {
 
                 <div className="mt-2 grid flex-1 grid-cols-7 gap-1 overflow-auto pr-1 sm:gap-2">
                   {calendarDays.map((day) => {
-                    if (day.isPlaceholder || !day.value || !day.label) {
+                    const dayValue = day.value;
+
+                    if (day.isPlaceholder || !dayValue || !day.label) {
                       return (
                         <div
                           key={day.key}
@@ -1842,7 +1844,7 @@ export default function HistoryPage() {
                       <button
                         key={day.key}
                         type="button"
-                        onClick={() => handleSelectCalendarDate(day.value)}
+                        onClick={() => handleSelectCalendarDate(dayValue)}
                         className={cn(
                           "group relative flex min-h-20 flex-col justify-between overflow-hidden rounded-2xl border p-1 text-left transition sm:min-h-28 sm:p-2",
                           hasTrades
