@@ -27,7 +27,7 @@
     "news": "News",
     "logout": "Log out",
     "language": "Language",
-    "profile": "Profile"
+    "profile": "Settings"
   },
   "history": {
     "title": "Stats",
@@ -40,16 +40,72 @@
     "calendar": {
       "open": "Trade calendar",
       "title": "Monthly trade calendar",
+      "dayViewTitle": "Day Performance",
       "close": "Close",
       "prev": "Prev",
       "next": "Next",
+      "prevDay": "Previous day",
+      "nextDay": "Next day",
+      "backToCalendar": "Back to calendar",
+      "dayPerformance": "Day Performance: {{date}}",
+      "dayJournal": "Day Journal",
+      "addJournal": "Add Journal",
+      "editJournal": "Edit Journal",
+      "saveJournal": "Save Journal",
+      "journalTitlePlaceholder": "Journal title (optional)",
+      "journalContentPlaceholder": "Write your day journal...",
+      "openExisting": "Open existing journal",
+      "loadingJournal": "Loading journal...",
+      "journalErrors": {
+        "load": "Could not load this day journal.",
+        "save": "Could not save the journal.",
+        "delete": "Could not delete the journal.",
+        "conflict": "A day journal already exists for this date.",
+        "contentRequired": "Add journal content before saving.",
+        "accountMissing": "Account is missing for journal requests.",
+        "sessionInconsistent": "Inconsistent session detected. Please sign in again.",
+        "invalidTradingDay": "The provided trading day is invalid.",
+        "invalidTimezone": "The provided timezone is invalid."
+      },
+      "journalEditor": {
+        "toolbar": {
+          "list": "List",
+          "numberedList": "1. 2. 3.",
+          "quote": "Quote",
+          "clear": "Clear",
+          "color": "Color:"
+        },
+        "aria": {
+          "editButton": "Edit journal",
+          "deleteButton": "Delete journal",
+          "close": "Close journal editor",
+          "saveEdited": "Save edited journal",
+          "saveNew": "Save new journal",
+          "applyColor": "Apply color {{color}}"
+        }
+      },
+      "noJournal": "No journal for this day. Add a journal to keep track of your thoughts and trades for the day.",
       "details": "Day details",
       "trades": "Trades: {{count}}",
       "wins": "Wins: {{count}}",
       "losses": "Losses: {{count}}",
       "winDay": "Win day",
       "lossDay": "Loss day",
-      "noTrades": "No trades for this date."
+      "noTrades": "No trades for this date.",
+      "table": {
+        "id": "ID",
+        "symbol": "Symbol",
+        "size": "Size",
+        "entryTime": "Entry Time",
+        "exitTime": "Exit Time",
+        "duration": "Duration",
+        "entryPrice": "Entry Price",
+        "exitPrice": "Exit Price",
+        "pnl": "P&L",
+        "commissions": "Commissions",
+        "fees": "Fees",
+        "direction": "Direction"
+      }
     },
     "filters": {
       "all": "All",
@@ -91,13 +147,60 @@
     "charts": {
       "pnlCumulative": "Cumulative PnL",
       "performanceDaily": "Daily performance",
+      "performanceBySide": "Performance by side",
+      "performanceBySession": "Performance by session",
+      "performanceByTime": "Performance by time",
+      "performanceByDay": "Performance by day",
+      "performanceByMonth": "Performance by month",
+      "averageTradeFrequency": "Average trade frequency",
       "tradesPerDay": "Trades per day",
+      "tradesPerWeek": "Trades per week",
+      "tradesPerMonth": "Trades per month",
+      "totalTradesBySide": "Total trades",
+      "metricLabel": "Chart metric",
+      "metricTotalPnl": "Total Profit/Loss",
+      "metricTotalTrades": "Total Trades",
+      "metricWinRate": "Win Rate",
+      "sessionWinRate": "Win Rate",
+      "sessionTotalTrades": "Total Trades",
+      "sessionAvgRr": "Avg RR",
+      "sessionProfit": "Profit",
+      "dayWinRate": "Win Rate",
+      "performanceModeAccumSessionsGains": "Accum. Sessions Gains %",
+      "performanceModeOverallGain": "Overall Gain %",
+      "balanceModeInitial": "Initial Balance",
+      "balanceModeCurrent": "Current Balance",
+      "ytd": "YTD",
+      "total": "Total",
+      "avgShort": "Avg",
+      "outOfSession": "Out of session",
       "tradesVolume": "Operations volume",
       "winRateDaily": "Daily win rate",
+      "winRateBySide": "Win rate",
       "consistency": "Consistency",
       "avgPnlDaily": "Average PnL per day",
       "effectiveness": "Effectiveness",
-      "filteredData": "Filtered data"
+      "filteredData": "Filtered data",
+      "tradeStatistics": "Trade statistics",
+      "tradeStats": {
+        "mostActiveDay": "Most active day",
+        "mostProfitableDay": "Most profitable day",
+        "leastProfitableDay": "Least profitable day",
+        "totalTrades": "Total number of trades",
+        "totalLotsTraded": "Total number of lots traded",
+        "avgTradeDuration": "Average trade duration",
+        "avgWinDuration": "Average win duration",
+        "avgLossDuration": "Average loss duration",
+        "avgWinningTrade": "Avg winning trade",
+        "avgLosingTrade": "Avg losing trade",
+        "tradeDirection": "Trade direction %",
+        "bestTrade": "Best trade",
+        "worstTrade": "Worst trade",
+        "activeDays": "active days",
+        "totalTradesLabel": "total trades",
+        "avgTradesPerDay": "avg trades/day",
+        "noData": "No data for this period."
+      }
     },
     "pnlPanel": {
       "title": "Profit and loss",
@@ -203,6 +306,7 @@
       "invalidQuantity": "Enter a valid quantity.",
       "invalidEntryPrice": "Enter a valid entry price.",
       "sessionNotFound": "Session not found in backend. Create a valid session first.",
+        "sessionClosed": "This session has already been closed. Reloading the session list.",
       "invalidSessionDates": "Session dates are invalid. End date must be greater than or equal to start date.",
       "invalidCreatePayload": "Session payload is invalid. Please review the form and try again.",
       "forbiddenCreateSession": "You do not have permission to create sessions with this user.",
@@ -267,6 +371,9 @@
         "active": "Active",
         "completed": "Completed"
       },
+      "actions": {
+        "reopen": "Reopen"
+      },
       "labels": {
         "market": "Market: {{symbol}}",
         "slot": {
@@ -279,6 +386,51 @@
         "pnl": "PnL",
         "successRate": "Success rate",
         "winsLosses": "Wins: {{wins}} · Losses: {{losses}}"
+      }
+    },
+    "journal": {
+      "title": "Journal entries",
+      "description": "Review and manage your latest day journals.",
+      "add": "Add Journal",
+      "newTitle": "Add Journal",
+      "editTitle": "Edit Journal",
+      "modalDescription": "Capture your notes for the selected trading day.",
+      "created": "Journal created successfully.",
+      "updated": "Journal updated successfully.",
+      "empty": "No journals found.",
+      "emptyContent": "No content.",
+      "untitled": "Untitled",
+      "page": "Page {{page}}",
+      "updatedAt": "Updated {{value}}",
+      "fields": {
+        "date": "Date",
+        "title": "Title (optional)",
+        "content": "Content"
+      },
+      "placeholders": {
+        "title": "Journal title (optional)",
+        "content": "Write your journal entry..."
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Journal",
+        "save": "Save changes",
+        "edit": "Edit Journal",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "errors": {
+        "load": "Could not load journals.",
+        "save": "Could not save journal.",
+        "loadExisting": "Could not open existing journal.",
+        "dateRequired": "Select a date before saving.",
+        "contentRequired": "Add content before saving."
+      },
+      "conflictModal": {
+        "title": "Journal already exists",
+        "description": "A journal already exists for {{date}}. What would you like to do?",
+        "cancel": "Cancel",
+        "edit": "Edit Journal"
       }
     },
     "newSession": {
@@ -312,13 +464,50 @@
     },
     "replay": {
       "mode": "Replay Session",
+      "editable": "Editable session",
+      "readonly": "Read-only session",
       "balance": "Balance: {{value}}",
       "asset": "Asset: {{value}}",
       "period": "Period: {{from}} to {{to}}",
       "exit": "Exit session",
       "confirmExit": "Do you want to end the session and leave replay mode?",
       "stay": "Stay",
-      "end": "End session"
+      "pause": "Pause",
+      "end": "End session",
+      "back": "Back",
+      "closedTitle": "Session closed",
+      "closedDescription": "This session is already closed. You can go back to the previous page.",
+      "notFoundTitle": "Session not found",
+      "notFoundDescription": "We could not find this session. You can go back to the previous page.",
+      "loadFailedTitle": "Could not open session",
+      "loadFailedDescription": "Failed to load session data. You can go back and try again.",
+      "sidebar": {
+        "chart": "Chart",
+        "settings": "Settings",
+        "stats": "Stats"
+      },
+      "switchSession": {
+        "title": "Switch active session",
+        "description": "Do you want to pause the current session and switch to {{session}}?",
+        "change": "Change",
+        "stay": "Stay"
+      },
+      "sessionStats": {
+        "title": "Active session stats",
+        "description": "Metrics limited to this session only, without calendar filters or aggregated history.",
+        "startBalance": "Start balance",
+        "currentBalance": "Current balance",
+        "netPnl": "Net PnL",
+        "totalTrades": "Total trades",
+        "winsLosses": "Wins / Losses",
+        "successRate": "Success rate",
+        "sidePerformance": "Performance by side",
+        "buy": "Buy",
+        "sell": "Sell",
+        "count": "Count",
+        "pnl": "PnL",
+        "noDetailedTrades": "This session still has no detailed trades to show distributions and curves."
+      }
     }
   },
   "news": {
@@ -396,12 +585,15 @@
     }
   },
   "profile": {
-    "title": "Profile",
+    "title": "Settings",
     "tabs": {
-      "data": "Data",
+      "data": "Profile",
+      "preferences": "Preferences",
       "subscription": "Subscription",
       "dataHeading": "Profile data",
       "dataDescription": "Add or edit your personal information and contact details here.",
+      "preferencesHeading": "Trading preferences",
+      "preferencesDescription": "Set default options for execution and risk management.",
       "subscriptionHeading": "Subscription",
       "subscriptionDescription": "Manage your plan, billing details, and renewal preferences."
     },
@@ -480,6 +672,57 @@
       "savingProfile": "Saving...",
       "profileUpdated": "Profile updated successfully",
       "profileUpdateFailed": "Could not update profile. Try again."
+    },
+    "preferences": {
+      "positionBracketsTitle": "Position Risk / Profit Brackets",
+      "switchToAutoOco": "Switch to auto OCO brackets",
+      "switchToManualOco": "Switch to manual brackets",
+      "positionBracketsDescription": "Position Brackets automatically aggregate your Take Profit and Stop Loss orders at the same price, functioning as a single bracket. Multiple entry and exit orders are not supported yet.",
+      "riskLabel": "Risk (-$)",
+      "profitLabel": "Profit (+$)",
+      "autoApplyLabel": "Automatically apply Risk / Profit bracket to new positions",
+      "saveButton": "Save",
+      "resetButton": "Reset",
+      "modeUpdatedMock": "Mode updated locally.",
+      "savedMock": "Preferences saved locally.",
+      "resetMock": "Preferences reset to defaults.",
+      "chart": {
+        "title": "Candle and color customization",
+        "description": "Adjust candle type and chart color palette for sessions. For now, these settings are local.",
+        "fields": {
+          "candleType": "Candle type",
+          "colorPreset": "Color preset",
+          "bullishBodyColor": "Bull body color",
+          "bearishBodyColor": "Bear body color",
+          "bullishWickColor": "Bull wick color",
+          "bearishWickColor": "Bear wick color",
+          "bullishBorderColor": "Bull border color",
+          "bearishBorderColor": "Bear border color",
+          "useBodyColorForWicks": "Use body color for wicks"
+        },
+        "options": {
+          "candleType": {
+            "candlestick": "Candlestick",
+            "hollow": "Hollow candles",
+            "ohlc": "OHLC (bar)",
+            "heikinAshi": "Heikin Ashi"
+          },
+          "colorPreset": {
+            "greenRed": "Green / Red",
+            "blackWhite": "Black / White",
+            "blueOrange": "Blue / Orange",
+            "custom": "Custom"
+          }
+        },
+        "actions": {
+          "save": "Save",
+          "reset": "Reset"
+        },
+        "messages": {
+          "saved": "Candle settings saved locally.",
+          "reset": "Candle settings reset to defaults."
+        }
+      }
     }
   },
   "language": {

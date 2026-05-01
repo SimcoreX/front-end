@@ -37,10 +37,10 @@ export function SidebarLink({ href, labelKey, Icon, onClick, disabled = false }:
       href={href}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
+        "flex items-center gap-3 rounded-xl border px-3 py-2 text-sm font-medium transition",
         isActive
-          ? "bg-[#2E5C8A]/20 text-white shadow-[0_10px_26px_rgba(46,92,138,0.25)] border border-[#2E5C8A]/60"
-          : "text-primary-200 hover:bg-primary-900/60 hover:text-white"
+          ? "border-primary-700/70 bg-primary-900/60 text-white shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+          : "border-transparent text-primary-200 hover:border-primary-600/70 hover:bg-primary-900/60 hover:text-white"
       )}
       aria-current={isActive ? "page" : undefined}
     >

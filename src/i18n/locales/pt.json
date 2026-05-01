@@ -28,7 +28,7 @@
     "news": "Notícias",
     "logout": "Sair",
     "language": "Idioma",
-    "profile": "Perfil"
+    "profile": "Settings"
   },
   "history": {
     "title": "Stats",
@@ -41,16 +41,72 @@
     "calendar": {
       "open": "Calendário de trades",
       "title": "Calendário mensal de trades",
+      "dayViewTitle": "Performance do dia",
       "close": "Fechar",
       "prev": "Anterior",
       "next": "Próximo",
+      "prevDay": "Dia anterior",
+      "nextDay": "Próximo dia",
+      "backToCalendar": "Voltar ao calendário",
+      "dayPerformance": "Performance do dia: {{date}}",
+      "dayJournal": "Journal do dia",
+      "addJournal": "Adicionar journal",
+      "editJournal": "Editar journal",
+      "saveJournal": "Salvar journal",
+      "journalTitlePlaceholder": "Título do journal (opcional)",
+      "journalContentPlaceholder": "Escreva seu journal do dia...",
+      "openExisting": "Abrir journal existente",
+      "loadingJournal": "Carregando journal...",
+      "journalErrors": {
+        "load": "Não foi possível carregar o journal deste dia.",
+        "save": "Não foi possível salvar o journal.",
+        "delete": "Não foi possível remover o journal.",
+        "conflict": "Já existe um journal para este dia.",
+        "contentRequired": "Preencha o conteúdo do journal antes de salvar.",
+        "accountMissing": "Conta não identificada para salvar o journal.",
+        "sessionInconsistent": "Sessão inconsistente detectada. Faça login novamente.",
+        "invalidTradingDay": "A data informada para o journal é inválida.",
+        "invalidTimezone": "O timezone informado para o journal é inválido."
+      },
+      "journalEditor": {
+        "toolbar": {
+          "list": "Lista",
+          "numberedList": "1. 2. 3.",
+          "quote": "Citar",
+          "clear": "Limpar",
+          "color": "Cor:"
+        },
+        "aria": {
+          "editButton": "Editar journal",
+          "deleteButton": "Remover journal",
+          "close": "Fechar editor de journal",
+          "saveEdited": "Salvar journal editado",
+          "saveNew": "Salvar novo journal",
+          "applyColor": "Aplicar cor {{color}}"
+        }
+      },
+      "noJournal": "Nenhum journal para este dia. Adicione um journal para registrar seus pensamentos e trades do dia.",
       "details": "Detalhes do dia",
-      "trades": "Trades: {{count}}",
-      "wins": "Wins: {{count}}",
-      "losses": "Losses: {{count}}",
+      "trades": "Operações: {{count}}",
+      "wins": "Vitórias: {{count}}",
+      "losses": "Perdas: {{count}}",
       "winDay": "Dia positivo",
       "lossDay": "Dia negativo",
-      "noTrades": "Sem trades nesta data."
+      "noTrades": "Sem operações nesta data.",
+      "table": {
+        "id": "ID",
+        "symbol": "Ativo",
+        "size": "Tamanho",
+        "entryTime": "Hora de entrada",
+        "exitTime": "Hora de saída",
+        "duration": "Duração",
+        "entryPrice": "Preço de entrada",
+        "exitPrice": "Preço de saída",
+        "pnl": "P&L",
+        "commissions": "Comissões",
+        "fees": "Taxas",
+        "direction": "Direção"
+      }
     },
     "filters": {
       "all": "Todos",
@@ -92,20 +148,67 @@
     "charts": {
       "pnlCumulative": "PnL acumulado",
       "performanceDaily": "Performance diária",
+      "performanceBySide": "Performance por lado",
+      "performanceBySession": "Performance por sessão",
+      "performanceByTime": "Performance por horário",
+      "performanceByDay": "Performance por dia",
+      "performanceByMonth": "Performance por mês",
+      "averageTradeFrequency": "Frequência média de trades",
       "tradesPerDay": "Trades por dia",
+      "tradesPerWeek": "Trades por semana",
+      "tradesPerMonth": "Trades por mês",
+      "totalTradesBySide": "Total de trades",
+      "metricLabel": "Métrica do gráfico",
+      "metricTotalPnl": "Total Profit/Loss",
+      "metricTotalTrades": "Total Trades",
+      "metricWinRate": "Win Rate",
+      "sessionWinRate": "Win Rate",
+      "sessionTotalTrades": "Total Trades",
+      "sessionAvgRr": "Avg RR",
+      "sessionProfit": "Profit",
+      "dayWinRate": "Win Rate",
+      "performanceModeAccumSessionsGains": "Accum. Sessions Gains %",
+      "performanceModeOverallGain": "Overall Gain %",
+      "balanceModeInitial": "Saldo inicial",
+      "balanceModeCurrent": "Saldo atual",
+      "ytd": "YTD",
+      "total": "Total",
+      "avgShort": "Avg",
+      "outOfSession": "Fora da sessão",
       "tradesVolume": "Volume de operações",
       "winRateDaily": "Win rate diário",
+      "winRateBySide": "Win rate",
       "consistency": "Consistência",
       "avgPnlDaily": "PnL médio por dia",
       "effectiveness": "Efetividade",
-      "filteredData": "Dados filtrados"
+      "filteredData": "Dados filtrados",
+      "tradeStatistics": "Estatísticas de trades",
+      "tradeStats": {
+        "mostActiveDay": "Dia mais ativo",
+        "mostProfitableDay": "Dia mais lucrativo",
+        "leastProfitableDay": "Dia menos lucrativo",
+        "totalTrades": "Total de trades",
+        "totalLotsTraded": "Total de lotes negociados",
+        "avgTradeDuration": "Duração média por trade",
+        "avgWinDuration": "Duração média de ganhos",
+        "avgLossDuration": "Duração média de perdas",
+        "avgWinningTrade": "Trade médio vencedor",
+        "avgLosingTrade": "Trade médio perdedor",
+        "tradeDirection": "Direção dos trades %",
+        "bestTrade": "Melhor trade",
+        "worstTrade": "Pior trade",
+        "activeDays": "dias ativos",
+        "totalTradesLabel": "trades totais",
+        "avgTradesPerDay": "média trades/dia",
+        "noData": "Sem dados para este período."
+      }
     },
     "pnlPanel": {
       "title": "Profit and loss",
       "subtitle": "Ao longo do tempo",
       "range": {
-        "all": "All",
-        "day": "Day",
+        "all": "Todos",
+        "day": "Dia",
         "hour": "1 Hora",
         "min15": "15 Min"
       },
@@ -116,7 +219,7 @@
         "totalTrades": "Trades totais",
         "winsLosses": "{{wins}}W / {{losses}}L",
         "breakevenTrades": "Trades em breakeven",
-        "thresholdValue": "Threshold: {{value}}"
+        "thresholdValue": "Limite: {{value}}"
       },
       "threshold": {
         "label": "Breakeven threshold",
@@ -126,22 +229,22 @@
     },
     "outcomeCards": {
       "winners": {
-        "title": "Winners",
-        "totalWinners": "Total winners",
-        "bestWin": "Best win",
-        "averageWin": "Average win",
-        "averageDuration": "Average duration",
-        "maxConsecutiveWins": "Max consecutive wins",
-        "avgConsecutiveWins": "Avg consecutive wins"
+        "title": "Ganhadores",
+        "totalWinners": "Total de ganhadores",
+        "bestWin": "Melhor ganho",
+        "averageWin": "Ganho médio",
+        "averageDuration": "Duração média",
+        "maxConsecutiveWins": "Máximo de ganhos consecutivos",
+        "avgConsecutiveWins": "Média de ganhos consecutivos"
       },
       "losers": {
-        "title": "Losers",
-        "totalLosers": "Total losers",
-        "worstLoss": "Worst loss",
-        "averageLoss": "Average loss",
-        "averageDuration": "Average duration",
-        "maxConsecutiveLosses": "Max consecutive losses",
-        "avgConsecutiveLosses": "Avg consecutive losses"
+        "title": "Perdedores",
+        "totalLosers": "Total de perdedores",
+        "worstLoss": "Maior perda",
+        "averageLoss": "Perda média",
+        "averageDuration": "Duração média",
+        "maxConsecutiveLosses": "Máximo de perdas consecutivas",
+        "avgConsecutiveLosses": "Média de perdas consecutivas"
       }
     },
     "layout": {
@@ -204,6 +307,7 @@
       "invalidQuantity": "Informe uma quantidade válida.",
       "invalidEntryPrice": "Informe um preço de entrada válido.",
       "sessionNotFound": "Sessão não encontrada no backend. Crie uma sessão válida primeiro.",
+      "sessionClosed": "Esta sessão já foi encerrada. Recarregando a lista de sessões.",
       "invalidSessionDates": "As datas da sessão são inválidas. A data final deve ser maior ou igual à data inicial.",
       "invalidCreatePayload": "Os dados da sessão estão incompletos ou inválidos. Revise os campos e tente novamente.",
       "forbiddenCreateSession": "Você não tem permissão para criar sessões com este usuário.",
@@ -248,7 +352,7 @@
       "charts": {
         "timeByMonth": "Tempo investido por mês",
         "successByMonth": "Taxa de sucesso por mês",
-        "tradesBySymbol": "Negociações por símbolo",
+        "tradesBySymbol": "Trades por símbolo",
         "monthlyBase": "Base mensal",
         "symbolBase": "Base por ativo"
       }
@@ -268,6 +372,9 @@
         "active": "Ativa",
         "completed": "Concluída"
       },
+      "actions": {
+        "reopen": "Reabrir"
+      },
       "labels": {
         "market": "Mercado: {{symbol}}",
         "slot": {
@@ -280,6 +387,51 @@
         "pnl": "PnL",
         "successRate": "Taxa de sucesso",
         "winsLosses": "Wins: {{wins}} · Losses: {{losses}}"
+      }
+    },
+    "journal": {
+      "title": "Entradas de journal",
+      "description": "Revise e gerencie seus journals mais recentes do dia.",
+      "add": "Adicionar journal",
+      "newTitle": "Adicionar journal",
+      "editTitle": "Editar journal",
+      "modalDescription": "Registre suas notas para o dia de trade selecionado.",
+      "created": "Journal criado com sucesso.",
+      "updated": "Journal atualizado com sucesso.",
+      "empty": "Nenhum journal encontrado.",
+      "emptyContent": "Sem conteúdo.",
+      "untitled": "Sem título",
+      "page": "Página {{page}}",
+      "updatedAt": "Atualizado em {{value}}",
+      "fields": {
+        "date": "Data",
+        "title": "Título (opcional)",
+        "content": "Conteúdo"
+      },
+      "placeholders": {
+        "title": "Título do journal (opcional)",
+        "content": "Escreva sua entrada de journal..."
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Criar journal",
+        "save": "Salvar alterações",
+        "edit": "Editar journal",
+        "previous": "Anterior",
+        "next": "Próxima"
+      },
+      "errors": {
+        "load": "Não foi possível carregar os journals.",
+        "save": "Não foi possível salvar o journal.",
+        "loadExisting": "Não foi possível abrir o journal existente.",
+        "dateRequired": "Selecione uma data antes de salvar.",
+        "contentRequired": "Adicione conteúdo antes de salvar."
+      },
+      "conflictModal": {
+        "title": "Journal já existe",
+        "description": "Já existe um journal para {{date}}. O que você deseja fazer?",
+        "cancel": "Cancelar",
+        "edit": "Editar journal"
       }
     },
     "newSession": {
@@ -313,13 +465,50 @@
     },
     "replay": {
       "mode": "Replay Session",
+      "editable": "Sessão editável",
+      "readonly": "Sessão somente leitura",
       "balance": "Balance: {{value}}",
       "asset": "Asset: {{value}}",
       "period": "Período: {{from}} até {{to}}",
       "exit": "Sair da sessão",
       "confirmExit": "Deseja encerrar a sessão e sair do replay?",
       "stay": "Ficar",
-      "end": "Encerrar"
+      "pause": "Pausar",
+      "end": "Encerrar",
+      "back": "Voltar",
+      "closedTitle": "Sessão encerrada",
+      "closedDescription": "Esta sessão já foi encerrada. Você pode voltar para a página anterior.",
+      "notFoundTitle": "Sessão não encontrada",
+      "notFoundDescription": "Não foi possível localizar esta sessão. Você pode voltar para a página anterior.",
+      "loadFailedTitle": "Não foi possível abrir a sessão",
+      "loadFailedDescription": "Falha ao carregar os dados da sessão. Você pode voltar e tentar novamente.",
+      "sidebar": {
+        "chart": "Chart",
+        "settings": "Settings",
+        "stats": "Stats"
+      },
+      "switchSession": {
+        "title": "Trocar sessão ativa",
+        "description": "Deseja pausar a sessão atual e mudar para {{session}}?",
+        "change": "Change",
+        "stay": "Stay"
+      },
+      "sessionStats": {
+        "title": "Estatisticas da sessao ativa",
+        "description": "Metricas exclusivas desta sessao, sem filtros de calendario nem historico agregado.",
+        "startBalance": "Saldo inicial",
+        "currentBalance": "Saldo atual",
+        "netPnl": "PnL liquido",
+        "totalTrades": "Total de trades",
+        "winsLosses": "Wins / Losses",
+        "successRate": "Taxa de sucesso",
+        "sidePerformance": "Performance por lado",
+        "buy": "Buy",
+        "sell": "Sell",
+        "count": "Quantidade",
+        "pnl": "PnL",
+        "noDetailedTrades": "Ainda nao ha trades detalhados nesta sessao para exibir distribuicoes e curvas."
+      }
     }
   },
   "news": {
@@ -397,12 +586,15 @@
     }
   },
   "profile": {
-    "title": "Perfil",
+    "title": "Settings",
     "tabs": {
-      "data": "Dados",
+      "data": "Profile",
+      "preferences": "Preferences",
       "subscription": "Assinatura",
       "dataHeading": "Dados do perfil",
       "dataDescription": "Adicione ou edite suas informações pessoais e dados de contato aqui.",
+      "preferencesHeading": "Preferences de negociação",
+      "preferencesDescription": "Defina opções padrão para execução e gerenciamento de risco.",
       "subscriptionHeading": "Assinatura",
       "subscriptionDescription": "Gerencie seu plano, detalhes de cobrança e preferências de renovação."
     },
@@ -481,6 +673,57 @@
       "savingProfile": "Salvando...",
       "profileUpdated": "Perfil atualizado com sucesso",
       "profileUpdateFailed": "Não foi possível atualizar o perfil. Tente novamente."
+    },
+    "preferences": {
+      "positionBracketsTitle": "Position Risk / Profit Brackets",
+      "switchToAutoOco": "Trocar para Auto OCO Brackets",
+      "switchToManualOco": "Trocar para Brackets manuais",
+      "positionBracketsDescription": "Os Position Brackets agregam automaticamente ordens de Take Profit e Stop Loss no mesmo preço, funcionando como um único bracket. Entradas e saídas múltiplas ainda não são suportadas.",
+      "riskLabel": "Risco (-$)",
+      "profitLabel": "Lucro (+$)",
+      "autoApplyLabel": "Aplicar automaticamente o bracket de Risco / Lucro em novas posições",
+      "saveButton": "Salvar",
+      "resetButton": "Resetar",
+      "modeUpdatedMock": "Modo atualizado localmente.",
+      "savedMock": "Preferences salvas localmente.",
+      "resetMock": "Preferences restauradas para o padrão.",
+      "chart": {
+        "title": "Personalização de candles e cores",
+        "description": "Ajuste tipo de candle e paleta de cores do gráfico da sessão. Por enquanto, essas configurações são locais.",
+        "fields": {
+          "candleType": "Tipo de candle",
+          "colorPreset": "Preset de cores",
+          "bullishBodyColor": "Cor do corpo (alta)",
+          "bearishBodyColor": "Cor do corpo (baixa)",
+          "bullishWickColor": "Cor do pavio (alta)",
+          "bearishWickColor": "Cor do pavio (baixa)",
+          "bullishBorderColor": "Cor da borda (alta)",
+          "bearishBorderColor": "Cor da borda (baixa)",
+          "useBodyColorForWicks": "Usar a mesma cor do corpo nos pavios"
+        },
+        "options": {
+          "candleType": {
+            "candlestick": "Candlestick",
+            "hollow": "Candles vazios",
+            "ohlc": "OHLC (barra)",
+            "heikinAshi": "Heikin Ashi"
+          },
+          "colorPreset": {
+            "greenRed": "Verde / Vermelho",
+            "blackWhite": "Preto / Branco",
+            "blueOrange": "Azul / Laranja",
+            "custom": "Personalizado"
+          }
+        },
+        "actions": {
+          "save": "Salvar",
+          "reset": "Resetar"
+        },
+        "messages": {
+          "saved": "Configuração de candles salva localmente.",
+          "reset": "Configuração de candles restaurada para o padrão."
+        }
+      }
     }
   },
   "language": {

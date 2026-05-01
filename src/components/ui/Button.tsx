@@ -31,6 +31,12 @@ const sizeStyles: Record<ButtonSize, string> = {
   lg: "h-14 px-6 text-base",
 };
 
+const whiteVariantPaddingBySize: Record<ButtonSize, string> = {
+  sm: "px-3.5",
+  md: "px-4.5",
+  lg: "px-5.5",
+};
+
 export function Button({
   variant = "primary",
   size = "md",
@@ -42,6 +48,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const isDisabled = disabled || isLoading || variant === "inactive";
+  const isWhiteVariant = variant === "light" || variant === "primary";
   const inlineStyle: CSSProperties | undefined =
     variant === "light"
       ? {
@@ -58,6 +65,7 @@ export function Button({
         "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition focus-visible:outline-none focus-visible:ring-2",
         variantStyles[variant],
         sizeStyles[size],
+        isWhiteVariant && whiteVariantPaddingBySize[size],
         isDisabled && "cursor-not-allowed opacity-70",
         className
       )}
@@ -66,7 +74,7 @@ export function Button({
       {...props}
     >
       {isLoading && <Spinner className="h-4 w-4" />}
-      <span>{children}</span>
+      <span className="inline-flex items-center justify-center leading-none">{children}</span>
     </button>
   );
 }

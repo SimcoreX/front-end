@@ -1,6 +1,7 @@
 "use client";
 
 import { submitTradeOperation } from "@/lib/api/trades";
+import { SESSION_CLOSED_EVENT } from "@/constants/sessionEvents";
 import { ApiError } from "@/lib/types/api";
 import type { TradeOperationPayload } from "@/lib/types/trades";
 import { useState } from "react";
@@ -39,6 +40,15 @@ export function useTradeOperation() {
       if (error instanceof ApiError) {
         if (error.code === "SESSION_NOT_FOUND") {
           setErrorKey("trades.apiErrors.sessionNotFound");
+        } else if (error.code === "SESSION_CLOSED") {
+          setErrorKey("trades.apiErrors.sessionClosed");
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent(SESSION_CLOSED_EVENT, {
+                detail: { sessionId },
+              })
+            );
+          }
         } else if (error.statusCode === 401) {
           setErrorKey("auth.errors.unauthorized");
         } else {

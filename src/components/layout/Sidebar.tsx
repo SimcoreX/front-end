@@ -8,8 +8,8 @@ import { useAuthActions } from "@/hooks/useAuthActions";
 import { cn } from "@/lib/classNames";
 import { useAuthStore } from "@/stores/authStore";
 import {
+  GearSix as GearSixIcon,
   SignOut as SignOutIcon,
-  UserCircle as UserCircleIcon,
   List as ListIcon,
   X as XIcon,
 } from "@phosphor-icons/react";
@@ -58,7 +58,7 @@ export function Sidebar() {
           <SidebarLink
             href="/profile"
             labelKey="nav.profile"
-            Icon={UserCircleIcon}
+            Icon={GearSixIcon}
             disabled={isInactiveUser}
           />
           <LanguageSwitcher />
@@ -127,7 +127,7 @@ export function Sidebar() {
               <SidebarLink
                 href="/profile"
                 labelKey="nav.profile"
-                Icon={UserCircleIcon}
+                Icon={GearSixIcon}
                 onClick={closeMobileMenu}
                 disabled={isInactiveUser}
               />

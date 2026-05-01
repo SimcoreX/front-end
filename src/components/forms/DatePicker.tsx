@@ -9,6 +9,10 @@ type DatePickerProps = InputHTMLAttributes<HTMLInputElement> & {
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   openToDate?: string;
+  minDate?: string;
+  rangeStart?: string;
+  rangeEnd?: string;
+  previewRangeOnHover?: boolean;
 };
 
 export function DatePicker({
@@ -18,6 +22,10 @@ export function DatePicker({
   isOpen: controlledIsOpen,
   onOpenChange,
   openToDate,
+  minDate,
+  rangeStart,
+  rangeEnd,
+  previewRangeOnHover,
   ...props
 }: DatePickerProps) {
   const inputId = id ?? props.name;
@@ -26,10 +34,6 @@ export function DatePicker({
   const isOpen = controlledIsOpen ?? internalIsOpen;
   const value = typeof props.value === "string" ? props.value : "";
   const displayValue = value ? formatDisplay(value) : props.placeholder ?? "Selecione...";
-  const [viewDate, setViewDate] = useState(() => {
-    const initial = openToDate || value;
-    return initial ? new Date(`${initial}T00:00:00`) : new Date();
-  });
 
   const setOpen = (nextIsOpen: boolean) => {
     if (controlledIsOpen === undefined) {
@@ -52,8 +56,6 @@ export function DatePicker({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [controlledIsOpen, onOpenChange]);
 
-  const days = buildCalendarDays(viewDate, value);
-
   const handleDaySelect = (nextDate: string) => {
     setOpen(false);
     if (!props.onChange) return;
@@ -67,15 +69,7 @@ export function DatePicker({
       <button
         id={inputId}
         type="button"
-        onClick={() => {
-          if (!isOpen) {
-            const anchorDate = openToDate || value;
-            if (anchorDate) {
-              setViewDate(new Date(`${anchorDate}T00:00:00`));
-            }
-          }
-          setOpen(!isOpen);
-        }}
+        onClick={() => setOpen(!isOpen)}
         className={cn(
           "flex w-full items-center justify-between gap-3 rounded-xl border border-secondary-500/40 bg-primary-900/60 px-4 py-3 text-left text-white outline-none transition focus-visible:border-secondary-400 focus-visible:ring-2 focus-visible:ring-secondary-500/30",
           !value && "text-primary-300",
@@ -89,51 +83,125 @@ export function DatePicker({
       </button>
       {props.name && <input type="hidden" name={props.name} value={value} />}
       {isOpen && (
-        <div className="absolute left-0 top-full z-20 mt-2 w-full min-w-65 rounded-2xl border border-[#2E5C8A]/50 bg-[#1B314B] p-4 shadow-[0_14px_32px_rgba(0,0,0,0.35)]">
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setViewDate((prev) => addMonths(prev, -1))}
-              className="rounded-lg border border-[#2E5C8A]/50 px-2 py-1 text-xs text-primary-100 transition hover:text-white"
-            >
-              Prev
-            </button>
-            <span className="text-sm font-semibold text-white">{formatMonthYear(viewDate)}</span>
-            <button
-              type="button"
-              onClick={() => setViewDate((prev) => addMonths(prev, 1))}
-              className="rounded-lg border border-[#2E5C8A]/50 px-2 py-1 text-xs text-primary-100 transition hover:text-white"
-            >
-              Next
-            </button>
-          </div>
-
-          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[10px] uppercase tracking-[0.2em] text-primary-200">
-            {weekdays.map((day) => (
-              <span key={day}>{day}</span>
-            ))}
-          </div>
-
-          <div className="mt-2 grid grid-cols-7 gap-1">
-            {days.map((day) => (
-              <button
-                key={day.key}
-                type="button"
-                onClick={() => handleDaySelect(day.value)}
-                className={cn(
-                  "flex h-9 w-full items-center justify-center rounded-lg text-xs font-semibold transition",
-                  day.isCurrentMonth ? "text-white" : "text-primary-300",
-                  day.isSelected
-                    ? "bg-[#2E5C8A]/45 text-white"
-                    : "hover:bg-[#2E5C8A]/25"
-                )}
-              >
-                {day.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <CalendarPopover
+          initialDate={openToDate || value}
+          selectedValue={value}
+          minDate={minDate}
+          rangeStart={rangeStart}
+          rangeEnd={rangeEnd}
+          previewRangeOnHover={previewRangeOnHover}
+          onSelect={handleDaySelect}
+        />
       )}
+    </div>
+  );
+}
+
+function CalendarPopover({
+  initialDate,
+  selectedValue,
+  minDate,
+  rangeStart,
+  rangeEnd,
+  previewRangeOnHover,
+  onSelect,
+}: {
+  initialDate?: string;
+  selectedValue: string;
+  minDate?: string;
+  rangeStart?: string;
+  rangeEnd?: string;
+  previewRangeOnHover?: boolean;
+  onSelect: (date: string) => void;
+}) {
+  const [viewDate, setViewDate] = useState(() => {
+    const normalizedInitial = normalizeISODate(initialDate);
+    return normalizedInitial ? new Date(`${normalizedInitial}T00:00:00`) : new Date();
+  });
+
+  const [hoveredDate, setHoveredDate] = useState<string | null>(null);
+  const normalizedRangeStart = normalizeISODate(rangeStart);
+  const normalizedRangeEnd = normalizeISODate(rangeEnd);
+  const normalizedSelectedValue = normalizeISODate(selectedValue);
+  const committedRangeEnd = normalizedRangeEnd ?? normalizedSelectedValue;
+  const previewRangeEnd =
+    previewRangeOnHover && normalizedRangeStart
+      ? hoveredDate ?? (committedRangeEnd && committedRangeEnd >= normalizedRangeStart ? committedRangeEnd : normalizedRangeStart)
+      : committedRangeEnd;
+
+  const days = buildCalendarDays(viewDate, selectedValue, {
+    minDate: normalizeISODate(minDate),
+    rangeStart: normalizedRangeStart,
+    rangeEnd: previewRangeEnd,
+  });
+
+  return (
+    <div className="absolute left-0 top-full z-20 mt-2 w-full min-w-65 rounded-2xl border border-[#2E5C8A]/50 bg-[#1B314B] p-4 shadow-[0_14px_32px_rgba(0,0,0,0.35)]">
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setViewDate((prev) => addMonths(prev, -1))}
+          className="rounded-lg border border-[#2E5C8A]/50 px-2 py-1 text-xs text-primary-100 transition hover:text-white"
+        >
+          Prev
+        </button>
+        <span className="text-sm font-semibold text-white">{formatMonthYear(viewDate)}</span>
+        <button
+          type="button"
+          onClick={() => setViewDate((prev) => addMonths(prev, 1))}
+          className="rounded-lg border border-[#2E5C8A]/50 px-2 py-1 text-xs text-primary-100 transition hover:text-white"
+        >
+          Next
+        </button>
+      </div>
+
+      <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[10px] uppercase tracking-[0.2em] text-primary-200">
+        {weekdays.map((day) => (
+          <span key={day}>{day}</span>
+        ))}
+      </div>
+
+      <div
+        className="mt-2 grid grid-cols-7 gap-1"
+        onMouseLeave={() => {
+          if (!previewRangeOnHover) return;
+          setHoveredDate(null);
+        }}
+      >
+        {days.map((day) => (
+          <button
+            key={day.key}
+            type="button"
+            onClick={() => {
+              if (day.isDisabled) return;
+              onSelect(day.value);
+            }}
+            onMouseEnter={() => {
+              if (!previewRangeOnHover || !normalizedRangeStart) return;
+              if (day.isDisabled || day.value < normalizedRangeStart) return;
+              setHoveredDate(day.value);
+            }}
+            onFocus={() => {
+              if (!previewRangeOnHover || !normalizedRangeStart) return;
+              if (day.isDisabled || day.value < normalizedRangeStart) return;
+              setHoveredDate(day.value);
+            }}
+            disabled={day.isDisabled}
+            className={cn(
+              "flex h-9 w-full items-center justify-center rounded-lg text-xs font-semibold transition",
+              day.isCurrentMonth ? "text-white" : "text-primary-300",
+              day.isInRange && "bg-[#2E5C8A]/22 text-white",
+              (day.isRangeStart || day.isRangeEnd) && "bg-[#2E5C8A]/45 text-white",
+              day.isSelected && "bg-[#2E5C8A]/45 text-white",
+              day.isDisabled
+                ? "cursor-not-allowed opacity-40 hover:bg-transparent"
+                : "hover:bg-[#2E5C8A]/25"
+            )}
+          >
+            {day.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -165,9 +233,21 @@ type CalendarDay = {
   value: string;
   isCurrentMonth: boolean;
   isSelected: boolean;
+  isDisabled: boolean;
+  isInRange: boolean;
+  isRangeStart: boolean;
+  isRangeEnd: boolean;
 };
 
-function buildCalendarDays(viewDate: Date, selectedValue: string): CalendarDay[] {
+function buildCalendarDays(
+  viewDate: Date,
+  selectedValue: string,
+  constraints: {
+    minDate?: string;
+    rangeStart?: string;
+    rangeEnd?: string;
+  }
+): CalendarDay[] {
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -175,21 +255,37 @@ function buildCalendarDays(viewDate: Date, selectedValue: string): CalendarDay[]
   const totalDays = 42;
   const days: CalendarDay[] = [];
   const selected = selectedValue ? new Date(`${selectedValue}T00:00:00`) : null;
+  const minDateValue = constraints.minDate;
+  const rangeStartValue = constraints.rangeStart;
+  const rangeEndValue = constraints.rangeEnd;
 
   for (let i = 0; i < totalDays; i += 1) {
     const date = new Date(year, month, 1 - startOffset + i);
     const isCurrentMonth = date.getMonth() === month;
     const value = toISODate(date);
+    const isDisabled = Boolean(minDateValue && value < minDateValue);
+    const isInRange = Boolean(rangeStartValue && rangeEndValue && value >= rangeStartValue && value <= rangeEndValue);
     days.push({
       key: value,
       label: date.getDate(),
       value,
       isCurrentMonth,
       isSelected: selected ? toISODate(selected) === value : false,
+      isDisabled,
+      isInRange,
+      isRangeStart: Boolean(rangeStartValue && value === rangeStartValue),
+      isRangeEnd: Boolean(rangeEndValue && value === rangeEndValue),
     });
   }
 
   return days;
+}
+
+function normalizeISODate(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+
+  const normalized = value.trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(normalized) ? normalized : undefined;
 }
 
 function addMonths(date: Date, delta: number) {

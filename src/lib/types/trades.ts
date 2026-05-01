@@ -25,7 +25,6 @@ export type TradeOperationResponse = {
 };
 
 export type BackendTradeOperationPayload = {
-  sessionId: string;
   symbol?: string;
   side: "buy" | "sell";
   quantity?: number;

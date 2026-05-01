@@ -8,6 +8,7 @@ export type AuthUserStatus = "ACTIVE" | "INACTIVE" | "BLOCKED" | string;
 
 export type AuthUser = {
   id: string;
+  accountId?: string;
   email: string;
   name: string | null;
   avatar?: string | null;

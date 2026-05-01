@@ -10,7 +10,7 @@ export default function NotFound() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-primary-950 px-6 py-12 text-white">
-      <div className="flex w-full max-w-md flex-col gap-6 rounded-2xl border border-primary-800/70 bg-primary-900/50 p-8 text-center">
+      <div className="flex w-full max-w-md flex-col gap-6 rounded-2xl bg-primary-900/60 p-8 text-center shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
         <PageTitle>{t("status.notFound")}</PageTitle>
         <Link
           href="/login"

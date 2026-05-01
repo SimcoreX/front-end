@@ -6,6 +6,7 @@ import { cn } from "@/lib/classNames";
 import { TextField } from "@/components/forms/TextField";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { SessionChartCustomizationCard } from "@/components/content/SessionChartCustomizationCard";
 import { useAuthStore } from "@/stores/authStore";
 import { useProfileFormStore } from "@/stores/profileFormStore";
 import { getProfile, updateProfile, updateProfilePassword } from "@/lib/api/profile";
@@ -18,10 +19,16 @@ import {
 } from "@/lib/api/subscription";
 import type { SubscriptionCurrentResponse, SubscriptionInvoice } from "@/lib/types/subscription";
 import { useSearchParams } from "next/navigation";
+import {
+  CurrencyDollar as CurrencyDollarIcon,
+  SlidersHorizontal as SlidersHorizontalIcon,
+  UserCircle as UserCircleIcon,
+} from "@phosphor-icons/react";
 
 const tabs = [
-  { key: "data", labelKey: "profile.tabs.data" },
-  { key: "subscription", labelKey: "profile.tabs.subscription" },
+  { key: "data", labelKey: "profile.tabs.data", Icon: UserCircleIcon },
+  { key: "preferences", labelKey: "profile.tabs.preferences", Icon: SlidersHorizontalIcon },
+  { key: "subscription", labelKey: "profile.tabs.subscription", Icon: CurrencyDollarIcon },
 ] as const;
 
 type TabKey = (typeof tabs)[number]["key"];
@@ -32,6 +39,11 @@ export function ProfileTabs() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabKey>("data");
+  const [isAutoOcoEnabled, setIsAutoOcoEnabled] = useState(false);
+  const [riskAmount, setRiskAmount] = useState("250");
+  const [profitAmount, setProfitAmount] = useState("500");
+  const [autoApplyBrackets, setAutoApplyBrackets] = useState(true);
+  const [preferencesMessage, setPreferencesMessage] = useState<string | null>(null);
   const userStatus = useAuthStore((state) => state.userStatus);
   const userEmail = useAuthStore((state) => state.userEmail) ?? "";
   const user = useAuthStore((state) => state.user);
@@ -102,7 +114,7 @@ export function ProfileTabs() {
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === "subscription" || tabParam === "data") {
+    if (tabParam === "subscription" || tabParam === "data" || tabParam === "preferences") {
       setActiveTab(tabParam as TabKey);
       return;
     }
@@ -390,9 +402,25 @@ export function ProfileTabs() {
     subscriptionInvoicesPage > 1 && !isLoadingSubscription && !isLoadingSubscriptionInvoicesPage;
   const canGoToNextInvoicesPage =
     subscriptionInvoicesHasNextPage && !isLoadingSubscription && !isLoadingSubscriptionInvoicesPage;
+  const handleToggleOcoMode = () => {
+    setIsAutoOcoEnabled((prev) => !prev);
+    setPreferencesMessage(t("profile.preferences.modeUpdatedMock"));
+  };
+
+  const handleSavePreferences = () => {
+    setPreferencesMessage(t("profile.preferences.savedMock"));
+  };
+
+  const handleResetPreferences = () => {
+    setIsAutoOcoEnabled(false);
+    setRiskAmount("250");
+    setProfitAmount("500");
+    setAutoApplyBrackets(true);
+    setPreferencesMessage(t("profile.preferences.resetMock"));
+  };
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-primary-900/50 shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+    <div className="overflow-hidden rounded-2xl bg-primary-900/60 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
       <div className="flex gap-3 bg-primary-900/50 px-3 pt-3">
         {tabs.map((tab) => {
           const isActive = tab.key === activeTab;
@@ -409,6 +437,7 @@ export function ProfileTabs() {
               )}
               aria-pressed={isActive}
             >
+              <tab.Icon size={16} weight="duotone" />
               {t(tab.labelKey)}
             </button>
           );
@@ -545,7 +574,7 @@ export function ProfileTabs() {
                     isLoading={isSavingProfile}
                     onClick={submitProfile}
                     disabled={isSavingProfile || isLoadingProfile}
-                    className="bg-white text-black hover:bg-white/90 border border-white px-4 py-2 text-sm"
+                    className="bg-white text-black hover:bg-primary-100 border border-primary-200 px-4 py-2 text-sm"
                   >
                     {isSavingProfile
                       ? t("profile.data.savingProfile")
@@ -567,6 +596,95 @@ export function ProfileTabs() {
           </div>
         )}
 
+        {activeTab === "preferences" && (
+          <div className="space-y-6 text-sm text-primary-100">
+            <div className="space-y-2">
+              <p className="font-semibold text-white">{t("profile.tabs.preferencesHeading")}</p>
+              <p className="text-primary-200">{t("profile.tabs.preferencesDescription")}</p>
+            </div>
+
+            <div className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <p className="text-base font-semibold text-white sm:text-lg">
+                  {t("profile.preferences.positionBracketsTitle")}
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="light"
+                  onClick={handleToggleOcoMode}
+                  className="px-4 py-2 text-sm"
+                >
+                  {isAutoOcoEnabled
+                    ? t("profile.preferences.switchToManualOco")
+                    : t("profile.preferences.switchToAutoOco")}
+                </Button>
+              </div>
+
+              <p className="mt-4 text-primary-200">{t("profile.preferences.positionBracketsDescription")}</p>
+
+              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <label className="flex flex-col gap-2 text-sm text-primary-100">
+                  <span className="font-medium text-primary-200">{t("profile.preferences.riskLabel")}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={riskAmount}
+                    onChange={(event) => setRiskAmount(event.target.value)}
+                    className="rounded-xl border border-primary-800/60 bg-primary-950/60 px-4 py-3 text-white outline-none transition focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/25"
+                  />
+                </label>
+
+                <label className="flex flex-col gap-2 text-sm text-primary-100">
+                  <span className="font-medium text-primary-200">{t("profile.preferences.profitLabel")}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={profitAmount}
+                    onChange={(event) => setProfitAmount(event.target.value)}
+                    className="rounded-xl border border-primary-800/60 bg-primary-950/60 px-4 py-3 text-white outline-none transition focus:border-primary-500/70 focus:ring-2 focus:ring-primary-500/25"
+                  />
+                </label>
+              </div>
+
+              <label className="mt-5 inline-flex items-center gap-3 text-sm text-primary-100">
+                <input
+                  type="checkbox"
+                  checked={autoApplyBrackets}
+                  onChange={(event) => setAutoApplyBrackets(event.target.checked)}
+                  className="h-4 w-4 rounded border border-primary-700/70 bg-primary-950/60 accent-secondary-500"
+                />
+                <span>{t("profile.preferences.autoApplyLabel")}</span>
+              </label>
+
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="light"
+                  onClick={handleSavePreferences}
+                  className="px-4 py-2 text-sm"
+                >
+                  {t("profile.preferences.saveButton")}
+                </Button>
+                <button
+                  type="button"
+                  onClick={handleResetPreferences}
+                  className="inline-flex h-9 items-center justify-center rounded-xl border border-primary-800/60 bg-primary-950/60 px-4 text-xs font-semibold text-primary-100 transition hover:border-primary-500/70 hover:text-white"
+                >
+                  {t("profile.preferences.resetButton")}
+                </button>
+              </div>
+
+              {preferencesMessage && <p className="mt-3 text-sm text-secondary-300">{preferencesMessage}</p>}
+            </div>
+
+            <SessionChartCustomizationCard />
+          </div>
+        )}
+
         {activeTab === "subscription" && (
           <div className="space-y-4 text-sm text-primary-100">
             <div className="space-y-2">
@@ -585,15 +703,15 @@ export function ProfileTabs() {
                 )}
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="rounded-xl bg-primary-950/40 p-4">
+                  <div className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
                     <p className="text-primary-300">{t("profile.subscription.plan")}</p>
                     <p className="text-lg font-semibold text-white">{subscriptionCurrent?.plan ?? "--"}</p>
                   </div>
-                  <div className="rounded-xl bg-primary-950/40 p-4">
+                  <div className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
                     <p className="text-primary-300">{t("profile.subscription.price")}</p>
                     <p className="text-lg font-semibold text-white">{formatCurrency(subscriptionCurrent?.price)}</p>
                   </div>
-                  <div className="rounded-xl bg-primary-950/40 p-4">
+                  <div className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
                     <p className="text-primary-300">{t("profile.subscription.renewsIn")}</p>
                     <p className="text-lg font-semibold text-white">
                       {typeof subscriptionCurrent?.renewsInDays === "number"
@@ -607,7 +725,7 @@ export function ProfileTabs() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-xl bg-primary-950/40 p-4 space-y-2">
+                  <div className="rounded-2xl bg-primary-900/60 p-4 space-y-2 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
                     <div className="flex items-center justify-between">
                       <span className="text-primary-300">{t("profile.subscription.status")}</span>
                       <span
@@ -639,7 +757,7 @@ export function ProfileTabs() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl bg-primary-950/40 p-4">
+                  <div className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
                     <p className="mb-3 text-primary-300">{t("profile.subscription.invoicesTitle")}</p>
                     <div className="space-y-2">
                       {isLoadingSubscriptionInvoicesPage &&
@@ -653,7 +771,7 @@ export function ProfileTabs() {
                         subscriptionInvoices.map((invoice) => (
                         <div
                           key={invoice.id}
-                          className="flex items-center justify-between rounded-lg border border-primary-800/60 bg-primary-950/60 px-3 py-2"
+                          className="flex items-center justify-between rounded-xl bg-primary-900/60 px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
                         >
                           <div>
                             <p className="font-semibold text-white">{invoice.id}</p>
@@ -708,7 +826,7 @@ export function ProfileTabs() {
                 onClick={handleRenewSubscription}
                 isLoading={isRenewingSubscription}
                 disabled={isRenewingSubscription || isCancelingSubscription || isLoadingSubscription}
-                className="bg-white text-black hover:bg-white/90 border border-white px-4 py-2 text-sm"
+                className="bg-white text-black hover:bg-primary-100 border border-primary-200 px-4 py-2 text-sm"
               >
                 {t("profile.subscription.renewNow")}
               </Button>
@@ -829,7 +947,7 @@ function SubscriptionSkeleton() {
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={`subscription-top-skeleton-${index}`}
-            className="rounded-xl bg-primary-950/40 p-4"
+            className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
           >
             <Skeleton className="h-3 w-20 rounded" />
             <Skeleton className="mt-3 h-7 w-24 rounded" />
@@ -839,7 +957,7 @@ function SubscriptionSkeleton() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-xl bg-primary-950/40 p-4 space-y-3">
+        <div className="rounded-2xl bg-primary-900/60 p-4 space-y-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={`subscription-status-skeleton-${index}`} className="flex items-center justify-between gap-2">
               <Skeleton className="h-3 w-28 rounded" />
@@ -848,7 +966,7 @@ function SubscriptionSkeleton() {
           ))}
         </div>
 
-        <div className="rounded-xl bg-primary-950/40 p-4 space-y-3">
+        <div className="rounded-2xl bg-primary-900/60 p-4 space-y-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
           <Skeleton className="h-4 w-40 rounded" />
           {Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={`subscription-invoice-skeleton-${index}`} className="h-14 w-full rounded-lg" />

@@ -6,23 +6,19 @@ import {
 
 describe("trades adapters", () => {
   it("maps frontend payload to backend payload", () => {
-    const payload = toBackendTradeOperationPayload(
-      {
-        symbol: "FX:EURUSD",
-        side: "buy",
-        quantity: 1,
-        entryPrice: 1.1234,
-        marketPrice: 1.125,
-        occurredAt: "2026-03-22T12:00:00.000Z",
-        notes: "test",
-        stopLoss: 1.12,
-        takeProfit: 1.13,
-      },
-      "session-1"
-    );
+    const payload = toBackendTradeOperationPayload({
+      symbol: "FX:EURUSD",
+      side: "buy",
+      quantity: 1,
+      entryPrice: 1.1234,
+      marketPrice: 1.125,
+      occurredAt: "2026-03-22T12:00:00.000Z",
+      notes: "test",
+      stopLoss: 1.12,
+      takeProfit: 1.13,
+    });
 
     expect(payload).toEqual({
-      sessionId: "session-1",
       symbol: "FX:EURUSD",
       side: "buy",
       quantity: 1,

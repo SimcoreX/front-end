@@ -6,7 +6,6 @@ import type {
   CreateSessionPayload,
   ListSessionsQuery,
   PaginatedSessionsApiResponse,
-  PaginatedSessionsResponse,
   SessionAnalyticsQuery,
   SessionAnalyticsResponse,
   SessionDetailResponse,
@@ -16,7 +15,6 @@ import type {
 } from "@/lib/types/trades";
 
 const SESSIONS_BASE_PATH = "/api/v1/sessions";
-const TRADE_OPERATIONS_BASE_PATH = "/api/v1/trades/operations";
 
 export function createSession(payload: CreateSessionPayload) {
   const normalizedPayload: CreateSessionPayload = {
@@ -103,11 +101,9 @@ export function completeSession(sessionId: string, payload: CompleteSessionPaylo
 }
 
 export function toBackendTradeOperationPayload(
-  payload: TradeOperationPayload,
-  sessionId: string
+  payload: TradeOperationPayload
 ): BackendTradeOperationPayload {
   return {
-    sessionId,
     symbol: payload.symbol?.trim() ? payload.symbol.trim().toUpperCase() : undefined,
     side: payload.side,
     quantity: payload.quantity ?? 1,
@@ -141,9 +137,9 @@ export async function submitTradeOperation(
   payload: TradeOperationPayload,
   sessionId: string
 ): Promise<TradeOperationResponse> {
-  const backendPayload = toBackendTradeOperationPayload(payload, sessionId);
+  const backendPayload = toBackendTradeOperationPayload(payload);
   const backendResponse = await request<BackendTradeOperationResponse>(
-    TRADE_OPERATIONS_BASE_PATH,
+    `${SESSIONS_BASE_PATH}/${sessionId}/trades`,
     {
       method: "POST",
       body: backendPayload,

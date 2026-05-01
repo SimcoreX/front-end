@@ -149,7 +149,7 @@ export function DashboardSummaryContent() {
       const [overviewResult, tradesTakenResult, tradingDaysResult, tradesBySymbolResult, winRateResult] =
         await Promise.allSettled([
           getDashboardOverview({ timezone }),
-          getHistoryTrades({ page: 1, pageSize: 1 }),
+          getHistoryTrades({ page: 1, pageSize: 200 }),
           getTradingDaysChartForLastSixMonths(),
           getSessionAnalytics({ timezone }),
           getSessionAnalytics({ timezone, from: winRateFrom, to: winRateTo }),
@@ -198,7 +198,9 @@ export function DashboardSummaryContent() {
       }
 
       if (tradesTakenResult.status === "fulfilled") {
-        setTradesTakenSummary(normalizeTradesTakenSummary(tradesTakenResult.value.summary));
+        setTradesTakenSummary(
+          normalizeTradesTakenSummary(tradesTakenResult.value.summary, tradesTakenResult.value.data)
+        );
       } else {
         setTradesTakenSummary(getTradesTakenFallback());
         setHasTradesTakenError(true);
@@ -390,16 +392,7 @@ export function DashboardSummaryContent() {
       setIsNewSessionModalOpen(false);
       resetForm();
 
-      const params = new URLSearchParams({
-        openReplay: "1",
-        sessionId: created.id,
-        sessionName: created.name,
-        balance: String(roundToTwoDecimals(parsedBalance)),
-        symbol: created.marketSymbol || form.symbol,
-        startDate: form.startDate,
-        endDate: form.endDate,
-      });
-      router.push(`/dashboard?${params.toString()}`);
+      router.push(`/session/${created.id}`);
     } catch (error) {
       setStatusType("error");
       if (isApiError(error)) {
@@ -462,15 +455,8 @@ export function DashboardSummaryContent() {
     },
   ];
 
-  const totalTakenTrades = Math.max(0, tradesTakenSummary.buyTrades) + Math.max(0, tradesTakenSummary.sellTrades);
-  const buyTakenTradeShare =
-    totalTakenTrades > 0
-      ? (Math.max(0, tradesTakenSummary.buyTrades) / totalTakenTrades) * 100
-      : 0;
-  const sellTakenTradeShare =
-    totalTakenTrades > 0
-      ? (Math.max(0, tradesTakenSummary.sellTrades) / totalTakenTrades) * 100
-      : 0;
+  const buyTakenTradeShare = clampPercentage(tradesTakenSummary.buyPercentage);
+  const sellTakenTradeShare = clampPercentage(tradesTakenSummary.sellPercentage);
 
   return (
     <div className="flex flex-col gap-6">
@@ -501,21 +487,21 @@ export function DashboardSummaryContent() {
                   : (
                       <span className="inline-flex w-full flex-col gap-2">
                         <span className="inline-flex flex-wrap items-center gap-1.5">
-                          <span className="font-semibold text-sky-400">
+                          <span className="font-semibold text-emerald-400">
                             Buys {formatPercentagePtBr(tradesTakenSummary.buyPercentage)}
                           </span>
                           <span className="text-primary-500">-</span>
-                          <span className="font-semibold text-red-400">
+                          <span className="font-semibold text-blue-400">
                             Sells {formatPercentagePtBr(tradesTakenSummary.sellPercentage)}
                           </span>
                         </span>
                         <span className="relative h-2 w-full overflow-hidden rounded-full bg-primary-800/80">
                           <span
-                            className="absolute inset-y-0 left-0 bg-sky-500/90"
+                            className="absolute inset-y-0 left-0 bg-emerald-500/90"
                             style={{ width: `${buyTakenTradeShare}%` }}
                           />
                           <span
-                            className="absolute inset-y-0 right-0 bg-red-500/85"
+                            className="absolute inset-y-0 right-0 bg-blue-500/85"
                             style={{ width: `${sellTakenTradeShare}%` }}
                           />
                         </span>
@@ -629,7 +615,7 @@ export function DashboardSummaryContent() {
                   setForm((prev) => ({
                     ...prev,
                     startDate: nextStartDate,
-                    endDate: prev.endDate < nextStartDate ? nextStartDate : prev.endDate,
+                    endDate: nextStartDate,
                   }));
                   setEndDatePickerAnchorDate(nextStartDate);
                   setIsStartDatePickerOpen(false);
@@ -642,6 +628,10 @@ export function DashboardSummaryContent() {
                 label={t("trades.newSession.fields.endDate")}
                 value={form.endDate}
                 isOpen={isEndDatePickerOpen}
+                minDate={form.startDate}
+                rangeStart={form.startDate}
+                rangeEnd={form.endDate}
+                previewRangeOnHover
                 onOpenChange={(nextIsOpen) => {
                   setIsEndDatePickerOpen(nextIsOpen);
                   if (nextIsOpen) {
@@ -1095,29 +1085,152 @@ function getTradesTakenFallback(): TradesTakenSummary {
   };
 }
 
+function clampPercentage(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(100, Math.max(0, value));
+}
+
+function toNonNegativeNumberOrNull(value: unknown): number | null {
+  const normalized = Number(value);
+  if (!Number.isFinite(normalized) || normalized < 0) {
+    return null;
+  }
+  return normalized;
+}
+
+function normalizeSummaryPercentage(value: number | null): number | null {
+  if (value === null) {
+    return null;
+  }
+
+  const scaled = value > 0 && value <= 1 ? value * 100 : value;
+  return clampPercentage(scaled);
+}
+
+function roundToSingleDecimal(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
 function normalizeTradesTakenSummary(summary: {
   totalTrades?: number | null;
   buyTrades?: number | null;
   sellTrades?: number | null;
   buyPercentage?: number | null;
   sellPercentage?: number | null;
-} | undefined): TradesTakenSummary {
+} | undefined, trades: HistoryTradeItemViewModel[] = []): TradesTakenSummary {
   const fallback = getTradesTakenFallback();
   if (!summary) return fallback;
 
-  const totalTrades = Number(summary.totalTrades);
-  const buyPercentage = Number(summary.buyPercentage);
-  const sellPercentage = Number(summary.sellPercentage);
-  const buyTrades = Number(summary.buyTrades);
-  const sellTrades = Number(summary.sellTrades);
+  const totalTradesInput = toNonNegativeNumberOrNull(summary.totalTrades);
+  let buyTrades = toNonNegativeNumberOrNull(summary.buyTrades);
+  let sellTrades = toNonNegativeNumberOrNull(summary.sellTrades);
+  const buyPercentageInput = normalizeSummaryPercentage(toNonNegativeNumberOrNull(summary.buyPercentage));
+  const sellPercentageInput = normalizeSummaryPercentage(toNonNegativeNumberOrNull(summary.sellPercentage));
+  const tradeSideCounts = countTradesBySide(trades);
+  const hasSummarySideMetrics =
+    (buyTrades ?? 0) + (sellTrades ?? 0) > 0 || (buyPercentageInput ?? 0) + (sellPercentageInput ?? 0) > 0;
+
+  let totalTrades = totalTradesInput ?? (buyTrades ?? 0) + (sellTrades ?? 0);
+
+  if (!hasSummarySideMetrics && tradeSideCounts.knownSideTrades > 0) {
+    buyTrades = tradeSideCounts.buyTrades;
+    sellTrades = tradeSideCounts.sellTrades;
+
+    if (totalTradesInput === null || totalTradesInput === 0) {
+      totalTrades = tradeSideCounts.knownSideTrades;
+    }
+  }
+
+  if (buyTrades === null && sellTrades !== null && totalTrades >= sellTrades) {
+    buyTrades = totalTrades - sellTrades;
+  }
+
+  if (sellTrades === null && buyTrades !== null && totalTrades >= buyTrades) {
+    sellTrades = totalTrades - buyTrades;
+  }
+
+  let buyPercentage = 0;
+  let sellPercentage = 0;
+
+  const tradesBySideTotal = (buyTrades ?? 0) + (sellTrades ?? 0);
+
+  if (tradesBySideTotal > 0) {
+    buyPercentage = ((buyTrades ?? 0) / tradesBySideTotal) * 100;
+    sellPercentage = ((sellTrades ?? 0) / tradesBySideTotal) * 100;
+    if (totalTrades === 0) {
+      totalTrades = tradesBySideTotal;
+    }
+  } else if (buyPercentageInput !== null || sellPercentageInput !== null) {
+    if (buyPercentageInput !== null && sellPercentageInput !== null) {
+      const percentageSum = buyPercentageInput + sellPercentageInput;
+      if (percentageSum > 0) {
+        buyPercentage = (buyPercentageInput / percentageSum) * 100;
+        sellPercentage = (sellPercentageInput / percentageSum) * 100;
+      }
+    } else if (buyPercentageInput !== null) {
+      buyPercentage = buyPercentageInput;
+      sellPercentage = 100 - buyPercentageInput;
+    } else if (sellPercentageInput !== null) {
+      sellPercentage = sellPercentageInput;
+      buyPercentage = 100 - sellPercentageInput;
+    }
+  }
+
+  buyPercentage = roundToSingleDecimal(clampPercentage(buyPercentage));
+  sellPercentage = roundToSingleDecimal(clampPercentage(sellPercentage));
+
+  const normalizedPercentageSum = buyPercentage + sellPercentage;
+  if (normalizedPercentageSum > 0 && normalizedPercentageSum !== 100) {
+    buyPercentage = roundToSingleDecimal((buyPercentage / normalizedPercentageSum) * 100);
+    sellPercentage = roundToSingleDecimal(100 - buyPercentage);
+  }
+
+  const normalizedTotalTrades = Math.max(0, Math.round(totalTrades));
+
+  if (normalizedTotalTrades > 0 && ((buyTrades ?? 0) + (sellTrades ?? 0) === 0)) {
+    const resolvedBuyTrades = Math.round((normalizedTotalTrades * buyPercentage) / 100);
+    buyTrades = resolvedBuyTrades;
+    sellTrades = Math.max(0, normalizedTotalTrades - resolvedBuyTrades);
+  }
 
   return {
-    totalTrades: Number.isFinite(totalTrades) ? totalTrades : fallback.totalTrades,
+    totalTrades: Number.isFinite(normalizedTotalTrades) ? normalizedTotalTrades : fallback.totalTrades,
     buyPercentage: Number.isFinite(buyPercentage) ? buyPercentage : fallback.buyPercentage,
     sellPercentage: Number.isFinite(sellPercentage) ? sellPercentage : fallback.sellPercentage,
-    buyTrades: Number.isFinite(buyTrades) ? buyTrades : fallback.buyTrades,
-    sellTrades: Number.isFinite(sellTrades) ? sellTrades : fallback.sellTrades,
+    buyTrades: Number.isFinite(buyTrades) ? Math.max(0, Math.round(buyTrades)) : fallback.buyTrades,
+    sellTrades: Number.isFinite(sellTrades) ? Math.max(0, Math.round(sellTrades)) : fallback.sellTrades,
   };
+}
+
+function countTradesBySide(trades: HistoryTradeItemViewModel[]) {
+  return trades.reduce(
+    (accumulator, trade) => {
+      const side = normalizeTradeSideValue(trade.side);
+      if (side === "buy") {
+        accumulator.buyTrades += 1;
+        accumulator.knownSideTrades += 1;
+      }
+
+      if (side === "sell") {
+        accumulator.sellTrades += 1;
+        accumulator.knownSideTrades += 1;
+      }
+
+      return accumulator;
+    },
+    {
+      buyTrades: 0,
+      sellTrades: 0,
+      knownSideTrades: 0,
+    }
+  );
+}
+
+function normalizeTradeSideValue(side: unknown): "buy" | "sell" | null {
+  const normalized = typeof side === "string" ? side.toLowerCase().trim() : "";
+  if (normalized === "buy") return "buy";
+  if (normalized === "sell") return "sell";
+  return null;
 }
 
 function normalizeOverallWinRate(overallWinRate: number | undefined): number {
@@ -1412,13 +1525,17 @@ function BarChart({ data, labels, color, valueSuffix, yAxisTicks, forceMax, barG
   );
 
   useEffect(() => {
-    setIsAnimated(false);
-    const frame = window.requestAnimationFrame(() => {
-      setIsAnimated(true);
+    let animateFrame = 0;
+    const resetFrame = window.requestAnimationFrame(() => {
+      setIsAnimated(false);
+      animateFrame = window.requestAnimationFrame(() => {
+        setIsAnimated(true);
+      });
     });
 
     return () => {
-      window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(resetFrame);
+      window.cancelAnimationFrame(animateFrame);
     };
   }, [animationSeed]);
 

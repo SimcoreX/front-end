@@ -6,20 +6,28 @@ import { SelectField } from "@/components/forms/SelectField";
 import { TextField } from "@/components/forms/TextField";
 import { Button } from "@/components/ui/Button";
 import { DashboardSummaryContent } from "@/components/content/DashboardSummaryContent";
-import { UnderConstruction } from "@/components/content/UnderConstruction";
 import { TradesBySymbolChart } from "@/components/charts/TradesBySymbolChart";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { SESSION_CLOSED_EVENT } from "@/constants/sessionEvents";
+import { createJournal, getDayJournal, listJournals, updateJournal } from "@/lib/api/journals";
 import { getMarketSymbols } from "@/lib/api/reference";
 import { completeSession, createSession, getSessionAnalytics, listSessions } from "@/lib/api/trades";
 import { cn } from "@/lib/classNames";
 import { isApiError } from "@/lib/types/api";
+import type { DayJournal } from "@/lib/types/journals";
 import type { MarketSymbolItem } from "@/lib/types/reference";
-import type { SessionAnalyticsResponse, SessionRecordResponse } from "@/lib/types/trades";
-import { ArrowLeft as ArrowLeftIcon, Plus as PlusIcon } from "@phosphor-icons/react";
+import type { SessionAnalyticsResponse, SessionRecordResponse, SessionStatus } from "@/lib/types/trades";
+import {
+  ArrowLeft as ArrowLeftIcon,
+  GearSix as GearSixIcon,
+  Plus as PlusIcon,
+  TrendUp as TrendUpIcon,
+  X as XIcon,
+} from "@phosphor-icons/react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { FocusEvent, ReactNode } from "react";
+import type { ClipboardEvent as ReactClipboardEvent, FocusEvent, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 const tabs = [
@@ -29,6 +37,7 @@ const tabs = [
 ] as const;
 
 const SESSIONS_PAGE_SIZE = 5;
+const JOURNALS_PAGE_SIZE = 10;
 const TIMEFRAME_OPTIONS = ["M1", "M5", "M15"].map((timeframe) => ({
   value: timeframe,
   label: timeframe,
@@ -42,6 +51,10 @@ type MarketOption = {
 };
 
 type TabKey = (typeof tabs)[number]["key"];
+
+function isTabKey(value: string | null): value is TabKey {
+  return tabs.some((tab) => tab.key === value);
+}
 
 type NewSessionForm = {
   name: string;
@@ -59,6 +72,8 @@ type ReplaySessionState = {
   symbol: string;
   startDate: string;
   endDate: string;
+  mode: "editable" | "readonly";
+  status: SessionStatus;
 };
 
 type SessionSlot = "asia" | "london" | "ny";
@@ -69,6 +84,11 @@ type MarketSessionRecord = {
   symbol: string;
   session: SessionSlot;
   status: "active" | "completed";
+  backendStatus: SessionStatus;
+  startDate: string;
+  endDate: string | null;
+  accountBalanceStart: number;
+  accountBalanceEnd: number | null;
   startedAt: string;
   endedAt?: string;
   timeframe: string;
@@ -81,6 +101,8 @@ type MarketSessionRecord = {
 };
 
 type MarketSummary = SessionAnalyticsResponse["summary"];
+type JournalModalMode = "create" | "edit";
+type ReplaySidebarTool = "chart" | "settings" | "stats";
 
 export function DashboardTabsPage() {
   const router = useRouter();
@@ -89,9 +111,13 @@ export function DashboardTabsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("summary");
   const [sessions, setSessions] = useState<MarketSessionRecord[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
-  const [hasSessionsError, setHasSessionsError] = useState(false);
   const [sessionsPage, setSessionsPage] = useState(1);
   const [sessionsHasNextPage, setSessionsHasNextPage] = useState(false);
+  const [journals, setJournals] = useState<DayJournal[]>([]);
+  const [isLoadingJournals, setIsLoadingJournals] = useState(false);
+  const [hasJournalsError, setHasJournalsError] = useState(false);
+  const [journalsPage, setJournalsPage] = useState(1);
+  const [journalsHasNextPage, setJournalsHasNextPage] = useState(false);
   const [summaryData, setSummaryData] = useState<MarketSummary>({
     totalTrades: 0,
     wins: 0,
@@ -111,6 +137,7 @@ export function DashboardTabsPage() {
   const [hasAnalyticsError, setHasAnalyticsError] = useState(false);
   const [isNewSessionModalOpen, setIsNewSessionModalOpen] = useState(false);
   const [activeReplaySession, setActiveReplaySession] = useState<ReplaySessionState | null>(null);
+  const [activeReplaySidebarTool, setActiveReplaySidebarTool] = useState<ReplaySidebarTool>("chart");
   const [isExitReplayModalOpen, setIsExitReplayModalOpen] = useState(false);
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
@@ -118,9 +145,22 @@ export function DashboardTabsPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusType, setStatusType] = useState<"success" | "error" | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [openingSessionId, setOpeningSessionId] = useState<string | null>(null);
   const [marketOptions, setMarketOptions] = useState<MarketOption[]>([]);
   const [isLoadingMarketOptions, setIsLoadingMarketOptions] = useState(false);
-  const [hasMarketOptionsError, setHasMarketOptionsError] = useState(false);
+  const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [journalModalMode, setJournalModalMode] = useState<JournalModalMode>("create");
+  const [editingJournalId, setEditingJournalId] = useState<string | null>(null);
+  const [journalDraftDate, setJournalDraftDate] = useState(getDefaultEndDate());
+  const [journalDraftTitle, setJournalDraftTitle] = useState("");
+  const [journalDraftContent, setJournalDraftContent] = useState("");
+  const [isJournalDatePickerOpen, setIsJournalDatePickerOpen] = useState(false);
+  const [isJournalSaving, setIsJournalSaving] = useState(false);
+  const [journalStatusMessage, setJournalStatusMessage] = useState<string | null>(null);
+  const [journalStatusType, setJournalStatusType] = useState<"success" | "error" | null>(null);
+  const [isJournalConflictModalOpen, setIsJournalConflictModalOpen] = useState(false);
+  const [conflictJournalDate, setConflictJournalDate] = useState<string | null>(null);
+  const [isOpeningExistingJournal, setIsOpeningExistingJournal] = useState(false);
   const [form, setForm] = useState<NewSessionForm>({
     name: "",
     accountBalance: formatUsdAmount(100000),
@@ -135,7 +175,6 @@ export function DashboardTabsPage() {
 
     const loadMarketSymbols = async () => {
       setIsLoadingMarketOptions(true);
-      setHasMarketOptionsError(false);
 
       try {
         const response = await getMarketSymbols();
@@ -153,7 +192,6 @@ export function DashboardTabsPage() {
       } catch {
         if (cancelled) return;
         setMarketOptions([]);
-        setHasMarketOptionsError(true);
       } finally {
         if (!cancelled) {
           setIsLoadingMarketOptions(false);
@@ -170,7 +208,6 @@ export function DashboardTabsPage() {
 
   const loadSessionsData = useCallback(async (page = 1) => {
     setIsLoadingSessions(true);
-    setHasSessionsError(false);
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -188,9 +225,36 @@ export function DashboardTabsPage() {
       setSessions([]);
       setSessionsPage(1);
       setSessionsHasNextPage(false);
-      setHasSessionsError(true);
     } finally {
       setIsLoadingSessions(false);
+    }
+  }, []);
+
+  const loadJournalsData = useCallback(async (page = 1) => {
+    setIsLoadingJournals(true);
+    setHasJournalsError(false);
+
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      const response = await listJournals({
+        page,
+        limit: JOURNALS_PAGE_SIZE,
+        sortBy: "tradingDay",
+        sortOrder: "desc",
+        scope: "day",
+        timezone,
+      });
+
+      setJournals(response.data ?? []);
+      setJournalsPage(response.page || page);
+      setJournalsHasNextPage(Boolean(response.hasNextPage));
+    } catch {
+      setJournals([]);
+      setJournalsPage(1);
+      setJournalsHasNextPage(false);
+      setHasJournalsError(true);
+    } finally {
+      setIsLoadingJournals(false);
     }
   }, []);
 
@@ -231,6 +295,19 @@ export function DashboardTabsPage() {
   }, [loadSessionsData, loadSummaryData]);
 
   useEffect(() => {
+    if (activeTab !== "journal") return;
+    loadJournalsData(1);
+  }, [activeTab, loadJournalsData]);
+
+  useEffect(() => {
+    const tabFromQuery = searchParams.get("tab");
+    if (!isTabKey(tabFromQuery)) return;
+    if (tabFromQuery === activeTab) return;
+
+    setActiveTab(tabFromQuery);
+  }, [activeTab, searchParams]);
+
+  useEffect(() => {
     const shouldOpenReplay = searchParams.get("openReplay") === "1";
     const sessionId = searchParams.get("sessionId");
     if (!shouldOpenReplay || !sessionId) return;
@@ -240,6 +317,7 @@ export function DashboardTabsPage() {
     const endDate = searchParams.get("endDate") ?? getDefaultEndDate();
     const symbol = searchParams.get("symbol") ?? "EURUSD";
     const sessionName = searchParams.get("sessionName") ?? t("trades.newSession.title");
+    const sessionStatus = normalizeSessionStatus(searchParams.get("sessionStatus") ?? "IN_PROGRESS");
 
     setActiveReplaySession({
       sessionId,
@@ -248,6 +326,8 @@ export function DashboardTabsPage() {
       symbol,
       startDate,
       endDate,
+      mode: isEditableSessionStatus(sessionStatus) ? "editable" : "readonly",
+      status: sessionStatus,
     });
 
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -259,11 +339,43 @@ export function DashboardTabsPage() {
       "symbol",
       "startDate",
       "endDate",
+      "sessionStatus",
     ].forEach((key) => nextParams.delete(key));
 
     const nextQuery = nextParams.toString();
     router.replace(nextQuery ? `/dashboard?${nextQuery}` : "/dashboard");
   }, [router, searchParams, t]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onSessionClosed = (event: Event) => {
+      const sessionId = (event as CustomEvent<{ sessionId?: string }>).detail?.sessionId;
+      if (!sessionId) return;
+
+      setStatusType("error");
+      setStatusMessage(t("trades.apiErrors.sessionClosed"));
+
+      setActiveReplaySession((previous) => {
+        if (!previous || previous.sessionId !== sessionId) {
+          return previous;
+        }
+
+        return {
+          ...previous,
+          mode: "readonly",
+          status: "COMPLETED",
+        };
+      });
+
+      void Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+    };
+
+    window.addEventListener(SESSION_CLOSED_EVENT, onSessionClosed);
+    return () => {
+      window.removeEventListener(SESSION_CLOSED_EVENT, onSessionClosed);
+    };
+  }, [loadSessionsData, loadSummaryData, sessionsPage, t]);
 
   const totalTimeInvested = formatDurationFromMinutes(summaryData.timeInvestedMinutes);
 
@@ -335,6 +447,133 @@ export function DashboardTabsPage() {
     setIsEndDatePickerOpen(false);
     setEndDatePickerAnchorDate(null);
     resetForm();
+  };
+
+  const resetJournalDraft = () => {
+    setJournalDraftDate(getDefaultEndDate());
+    setJournalDraftTitle("");
+    setJournalDraftContent("");
+    setIsJournalDatePickerOpen(false);
+    setEditingJournalId(null);
+    setJournalModalMode("create");
+  };
+
+  const handleOpenJournalModal = () => {
+    setJournalStatusMessage(null);
+    setJournalStatusType(null);
+    setIsJournalConflictModalOpen(false);
+    setConflictJournalDate(null);
+    resetJournalDraft();
+    setIsJournalModalOpen(true);
+  };
+
+  const handleCloseJournalModal = () => {
+    setIsJournalModalOpen(false);
+    setIsJournalDatePickerOpen(false);
+    setIsOpeningExistingJournal(false);
+    resetJournalDraft();
+  };
+
+  const openJournalForEdit = (journal: DayJournal) => {
+    setJournalModalMode("edit");
+    setEditingJournalId(journal.id);
+    setJournalDraftDate(journal.tradingDay);
+    setJournalDraftTitle(journal.title ?? "");
+    setJournalDraftContent(journal.content ?? "");
+    setIsJournalDatePickerOpen(false);
+    setIsJournalModalOpen(true);
+  };
+
+  const handleOpenConflictJournalForEdit = async () => {
+    if (!conflictJournalDate) return;
+
+    setIsOpeningExistingJournal(true);
+
+    try {
+      const response = await getDayJournal(conflictJournalDate);
+      if (!response.data) {
+        setJournalStatusType("error");
+        setJournalStatusMessage(t("trades.journal.errors.loadExisting"));
+        return;
+      }
+
+      setIsJournalConflictModalOpen(false);
+      setConflictJournalDate(null);
+      openJournalForEdit(response.data);
+    } catch {
+      setJournalStatusType("error");
+      setJournalStatusMessage(t("trades.journal.errors.loadExisting"));
+    } finally {
+      setIsOpeningExistingJournal(false);
+    }
+  };
+
+  const handleSaveJournal = async () => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    const normalizedDate = journalDraftDate.trim();
+    const normalizedTitle = journalDraftTitle.trim();
+    const normalizedContent = normalizeJournalEditorContent(journalDraftContent);
+
+    if (journalModalMode === "create" && !normalizedDate) {
+      setJournalStatusType("error");
+      setJournalStatusMessage(t("trades.journal.errors.dateRequired"));
+      return;
+    }
+
+    if (isRichTextEffectivelyEmpty(normalizedContent)) {
+      setJournalStatusType("error");
+      setJournalStatusMessage(t("trades.journal.errors.contentRequired"));
+      return;
+    }
+
+    setIsJournalSaving(true);
+
+    try {
+      if (journalModalMode === "edit" && editingJournalId) {
+        await updateJournal(editingJournalId, {
+          title: normalizedTitle || null,
+          content: normalizedContent,
+          metadata: null,
+        });
+
+        await loadJournalsData(journalsPage);
+        setJournalStatusType("success");
+        setJournalStatusMessage(t("trades.journal.updated"));
+        handleCloseJournalModal();
+        return;
+      }
+
+      await createJournal({
+        tradingDay: normalizedDate,
+        timezone,
+        scope: "day",
+        title: normalizedTitle || null,
+        content: normalizedContent,
+        metadata: null,
+      });
+
+      await loadJournalsData(1);
+      setJournalStatusType("success");
+      setJournalStatusMessage(t("trades.journal.created"));
+      handleCloseJournalModal();
+    } catch (error) {
+      if (isApiError(error) && error.statusCode === 409) {
+        setIsJournalModalOpen(false);
+        setIsJournalConflictModalOpen(true);
+        setConflictJournalDate(normalizedDate);
+        return;
+      }
+
+      setJournalStatusType("error");
+      setJournalStatusMessage(t("trades.journal.errors.save"));
+    } finally {
+      setIsJournalSaving(false);
+    }
+  };
+
+  const handleCancelJournalConflict = () => {
+    setIsJournalConflictModalOpen(false);
+    setConflictJournalDate(null);
   };
 
   const handleAccountBalanceFocus = (event: FocusEvent<HTMLInputElement>) => {
@@ -434,18 +673,11 @@ export function DashboardTabsPage() {
       });
 
       await Promise.all([loadSessionsData(1), loadSummaryData()]);
-      setStatusType("success");
-      setStatusMessage(t("trades.newSession.created"));
+      setStatusType(null);
+      setStatusMessage(null);
       setIsNewSessionModalOpen(false);
-      setActiveReplaySession({
-        sessionId: created.id,
-        sessionName: created.name,
-        accountBalance: parsedBalance,
-        symbol: created.marketSymbol || form.symbol,
-        startDate: form.startDate,
-        endDate: form.endDate,
-      });
       resetForm();
+      router.push(`/session/${created.id}`);
     } catch (error) {
       setStatusType("error");
       if (isApiError(error)) {
@@ -459,7 +691,7 @@ export function DashboardTabsPage() {
           setStatusMessage(t("trades.apiErrors.createSessionFailed"));
         }
       } else {
-        setStatusMessage(t("trades.apiErrors.requestFailed"));
+        setStatusMessage(t("trades.apiErrors.createSessionFailed"));
       }
     } finally {
       setIsCreatingSession(false);
@@ -468,6 +700,14 @@ export function DashboardTabsPage() {
 
   const handleRequestExitReplay = () => {
     if (!activeReplaySession) return;
+
+    if (activeReplaySession.mode === "readonly") {
+      setIsExitReplayModalOpen(false);
+      setActiveReplaySession(null);
+      void Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+      return;
+    }
+
     setIsExitReplayModalOpen(true);
   };
 
@@ -475,42 +715,118 @@ export function DashboardTabsPage() {
     setIsExitReplayModalOpen(false);
   };
 
+  const handlePauseExitReplay = async () => {
+    if (!activeReplaySession) return;
+
+    const pausedSessionId = activeReplaySession.sessionId;
+
+    setSessions((previous) =>
+      previous.map((session) =>
+        session.id === pausedSessionId
+          ? {
+              ...session,
+              status: "active",
+              backendStatus: "IN_PROGRESS",
+            }
+          : session
+      )
+    );
+
+    setIsExitReplayModalOpen(false);
+    setActiveReplaySession(null);
+    await Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+  };
+
   const handleConfirmExitReplay = async () => {
     if (!activeReplaySession) return;
 
-    const fallbackEndedAt = `${activeReplaySession.endDate}T23:59:59.000Z`;
+    if (activeReplaySession.mode === "readonly") {
+      setIsExitReplayModalOpen(false);
+      setActiveReplaySession(null);
+      await Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+      return;
+    }
+
+    const closingSessionId = activeReplaySession.sessionId;
+    const completionTimestamp = new Date().toISOString();
 
     try {
       await completeSession(activeReplaySession.sessionId, {
         accountBalanceEnd: roundToTwoDecimals(activeReplaySession.accountBalance),
-        endedAt: fallbackEndedAt,
+        endedAt: completionTimestamp,
       });
-      await Promise.all([loadSessionsData(1), loadSummaryData()]);
+      setSessions((previous) =>
+        previous.map((session) =>
+          session.id === closingSessionId
+            ? {
+                ...session,
+                status: "completed",
+                backendStatus: "COMPLETED",
+              }
+            : session
+        )
+      );
     } catch (error) {
       setStatusType("error");
       if (isApiError(error)) {
-        setStatusMessage(t("trades.apiErrors.requestFailed"));
+        if (error.code === "INVALID_SESSION_DATES") {
+          setStatusMessage(t("trades.apiErrors.invalidSessionDates"));
+        } else {
+          setStatusMessage(null);
+          setStatusType(null);
+        }
       } else {
-        setStatusMessage(t("trades.apiErrors.requestFailed"));
+        setStatusMessage(null);
+        setStatusType(null);
       }
       return;
     }
 
     setIsExitReplayModalOpen(false);
     setActiveReplaySession(null);
+    await Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
   };
+
+  const handleReopenSession = (sessionId: string) => {
+    setOpeningSessionId(sessionId);
+    setStatusMessage(null);
+    setStatusType(null);
+    router.push(`/session/${sessionId}`);
+    setOpeningSessionId(null);
+  };
+
+  const handleTabChange = useCallback((nextTab: TabKey) => {
+    setActiveTab(nextTab);
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("tab", nextTab);
+    const nextQuery = nextParams.toString();
+
+    router.replace(nextQuery ? `/dashboard?${nextQuery}` : "/dashboard");
+  }, [router, searchParams]);
 
   const chartSymbol = useMemo(() => toTradingViewSymbol(activeReplaySession?.symbol), [activeReplaySession?.symbol]);
   const replayFrom = useMemo(() => toUnixTimestamp(activeReplaySession?.startDate, false), [activeReplaySession?.startDate]);
   const replayTo = useMemo(() => toUnixTimestamp(activeReplaySession?.endDate, true), [activeReplaySession?.endDate]);
   const canGoToPrevSessionsPage = sessionsPage > 1 && !isLoadingSessions;
   const canGoToNextSessionsPage = sessionsHasNextPage && !isLoadingSessions;
+  const canGoToPrevJournalsPage = journalsPage > 1 && !isLoadingJournals;
+  const canGoToNextJournalsPage = journalsHasNextPage && !isLoadingJournals;
+  const replaySidebarItems = [
+    {
+      key: "chart" as const,
+      label: t("trades.replay.sidebar.chart"),
+      svgSrc: "/candlestick-chart-svgrepo-com.svg",
+    },
+    { key: "settings" as const, label: t("trades.replay.sidebar.settings"), Icon: GearSixIcon },
+    { key: "stats" as const, label: t("trades.replay.sidebar.stats"), Icon: TrendUpIcon },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
       <PageTitle>{t("nav.dashboard")}</PageTitle>
 
-      <div className="overflow-hidden rounded-2xl bg-primary-900/50 shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+      <div className="overflow-hidden rounded-2xl bg-primary-900/60 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
         <div className="flex gap-3 bg-primary-900/50 px-3 pt-3">
           {tabs.map((tab) => {
             const isActive = tab.key === activeTab;
@@ -518,7 +834,7 @@ export function DashboardTabsPage() {
               <button
                 key={tab.key}
                 type="button"
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => handleTabChange(tab.key)}
                 className={cn(
                   "flex items-center gap-2 border-b-2 pb-2 text-sm font-semibold transition",
                   isActive
@@ -563,7 +879,7 @@ export function DashboardTabsPage() {
                     </>
                   )}
                 </div>
-                <Button type="button" variant="light" className="min-w-40" onClick={handleOpenModal}>
+                <Button type="button" variant="light" size="sm" className="min-w-40" onClick={handleOpenModal}>
                   <span className="inline-flex items-center gap-2">
                     <PlusIcon size={16} weight="bold" />
                     {t("trades.newSession.button")}
@@ -577,20 +893,31 @@ export function DashboardTabsPage() {
                 </p>
               )}
 
-              {hasSessionsError && (
-                <p className="text-sm text-red-300">{t("trades.apiErrors.requestFailed")}</p>
-              )}
-
               <DashboardSummaryContent />
             </div>
           )}
 
           {activeTab === "sessions" && (
             <div className="space-y-6 text-sm text-primary-100">
-              <div className="space-y-2">
-                <p className="font-semibold text-white">{t("trades.sessions.title")}</p>
-                <p className="text-primary-200">{t("trades.sessions.description")}</p>
+              <div className="flex flex-col gap-4 rounded-2xl bg-primary-900/60 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="space-y-2">
+                  <p className="font-semibold text-white">{t("trades.sessions.title")}</p>
+                  <p className="text-primary-200">{t("trades.sessions.description")}</p>
+                </div>
+
+                <Button type="button" variant="light" size="sm" className="min-w-40" onClick={handleOpenModal}>
+                  <span className="inline-flex items-center gap-2">
+                    <PlusIcon size={16} weight="bold" />
+                    {t("trades.newSession.button")}
+                  </span>
+                </Button>
               </div>
+
+              {statusMessage && (
+                <p className={cn("text-sm", statusType === "success" ? "text-green-400" : "text-red-400")}>
+                  {statusMessage}
+                </p>
+              )}
 
               <div className="space-y-3">
                 {isLoadingSessions ? (
@@ -606,11 +933,13 @@ export function DashboardTabsPage() {
                       const losses = session.losses;
                       const totalPnl = session.totalPnl;
                       const successRate = session.successRate;
+                      const canReopen = session.status === "active";
+                      const isOpeningThisSession = openingSessionId === session.id;
 
                       return (
                         <div
                           key={session.id}
-                          className="rounded-xl bg-primary-950/50 p-4"
+                          className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
                         >
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <p className="text-sm font-semibold text-white">{session.name}</p>
@@ -646,6 +975,21 @@ export function DashboardTabsPage() {
                               {t("trades.sessions.labels.winsLosses", { wins, losses })}
                             </span>
                           </div>
+
+                          {canReopen && (
+                            <div className="mt-4 flex justify-end">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="light"
+                                onClick={() => handleReopenSession(session.id)}
+                                isLoading={isOpeningThisSession}
+                                disabled={Boolean(openingSessionId && !isOpeningThisSession)}
+                              >
+                                {t("trades.sessions.actions.reopen")}
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -683,10 +1027,107 @@ export function DashboardTabsPage() {
 
           {activeTab === "journal" && (
             <div className="space-y-6 text-sm text-primary-100">
-              <div className="space-y-2">
-                <p className="font-semibold text-white">{t("trades.tabs.journal")}</p>
+              <div className="flex flex-col gap-4 rounded-2xl bg-primary-900/60 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="space-y-1">
+                  <p className="font-semibold text-white">{t("trades.journal.title")}</p>
+                  <p className="text-primary-200">{t("trades.journal.description")}</p>
+                </div>
+                <Button type="button" variant="light" size="sm" className="min-w-40" onClick={handleOpenJournalModal}>
+                  <span className="inline-flex items-center gap-2">
+                    <PlusIcon size={16} weight="bold" />
+                    {t("trades.journal.add")}
+                  </span>
+                </Button>
               </div>
-              <UnderConstruction />
+
+              {journalStatusMessage && (
+                <p className={cn("text-sm", journalStatusType === "success" ? "text-green-400" : "text-red-400")}>
+                  {journalStatusMessage}
+                </p>
+              )}
+
+              {hasJournalsError && (
+                <p className="text-sm text-red-300">{t("trades.journal.errors.load")}</p>
+              )}
+
+              <div className="space-y-3">
+                {isLoadingJournals ? (
+                  <JournalsTabSkeleton />
+                ) : (
+                  <>
+                    {!journals.length && (
+                      <p className="text-sm text-primary-300">{t("trades.journal.empty")}</p>
+                    )}
+
+                    {journals.map((journal) => {
+                      const preview = stripHtmlForPreview(journal.content);
+
+                      return (
+                        <div
+                          key={journal.id}
+                          className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+                        >
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="space-y-1">
+                              <p className="text-sm font-semibold text-white">
+                                {journal.title?.trim() || t("trades.journal.untitled")}
+                              </p>
+                              <p className="text-xs text-primary-300">
+                                {formatJournalDate(journal.tradingDay, i18n.language)}
+                              </p>
+                            </div>
+
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => openJournalForEdit(journal)}
+                            >
+                              {t("trades.journal.actions.edit")}
+                            </Button>
+                          </div>
+
+                          <p className="mt-3 whitespace-pre-wrap wrap-break-word text-primary-100">
+                            {preview || t("trades.journal.emptyContent")}
+                          </p>
+
+                          <p className="mt-3 text-xs text-primary-300">
+                            {t("trades.journal.updatedAt", {
+                              value: formatJournalTimestamp(journal.updatedAt, i18n.language),
+                            })}
+                          </p>
+                        </div>
+                      );
+                    })}
+
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <span className="text-xs text-primary-300">
+                        {t("trades.journal.page", { page: journalsPage })}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => loadJournalsData(journalsPage - 1)}
+                          disabled={!canGoToPrevJournalsPage}
+                        >
+                          {t("trades.journal.actions.previous")}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="light"
+                          onClick={() => loadJournalsData(journalsPage + 1)}
+                          disabled={!canGoToNextJournalsPage}
+                        >
+                          {t("trades.journal.actions.next")}
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -735,9 +1176,6 @@ export function DashboardTabsPage() {
                 options={TIMEFRAME_OPTIONS}
                 onChange={(event) => setForm((prev) => ({ ...prev, timeframe: event.target.value }))}
               />
-              {hasMarketOptionsError && (
-                <p className="text-xs text-red-300">{t("trades.apiErrors.requestFailed")}</p>
-              )}
               <DatePicker
                 label={t("trades.newSession.fields.startDate")}
                 value={form.startDate}
@@ -753,7 +1191,7 @@ export function DashboardTabsPage() {
                   setForm((prev) => ({
                     ...prev,
                     startDate: nextStartDate,
-                    endDate: prev.endDate < nextStartDate ? nextStartDate : prev.endDate,
+                    endDate: nextStartDate,
                   }));
                   setEndDatePickerAnchorDate(nextStartDate);
                   setIsStartDatePickerOpen(false);
@@ -766,6 +1204,10 @@ export function DashboardTabsPage() {
                 label={t("trades.newSession.fields.endDate")}
                 value={form.endDate}
                 isOpen={isEndDatePickerOpen}
+                minDate={form.startDate}
+                rangeStart={form.startDate}
+                rangeEnd={form.endDate}
+                previewRangeOnHover
                 onOpenChange={(nextIsOpen) => {
                   setIsEndDatePickerOpen(nextIsOpen);
                   if (nextIsOpen) {
@@ -800,9 +1242,71 @@ export function DashboardTabsPage() {
         </div>
       )}
 
+      {isJournalModalOpen && (
+        <JournalEditorModal
+          isOpen={isJournalModalOpen}
+          mode={journalModalMode}
+          titleValue={journalDraftTitle}
+          contentValue={journalDraftContent}
+          onTitleChange={setJournalDraftTitle}
+          onContentChange={setJournalDraftContent}
+          onClose={handleCloseJournalModal}
+          onSave={handleSaveJournal}
+          isSaving={isJournalSaving}
+          saveLabel={
+            journalModalMode === "edit"
+              ? t("trades.journal.actions.save")
+              : t("trades.journal.actions.create")
+          }
+          modalTitle={journalModalMode === "edit" ? t("trades.journal.editTitle") : t("trades.journal.newTitle")}
+          titlePlaceholder={t("trades.journal.placeholders.title")}
+          contentPlaceholder={t("trades.journal.placeholders.content")}
+          dateLabel={t("trades.journal.fields.date")}
+          dateValue={journalDraftDate}
+          dateDisplayValue={formatJournalDate(journalDraftDate, i18n.language)}
+          showDateField
+          dateEditable={journalModalMode === "create"}
+          datePickerOpen={isJournalDatePickerOpen}
+          onDatePickerOpenChange={setIsJournalDatePickerOpen}
+          onDateChange={(nextDate) => {
+            setJournalDraftDate(nextDate);
+            setIsJournalDatePickerOpen(false);
+          }}
+        />
+      )}
+
+      {isJournalConflictModalOpen && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-primary-800/70 bg-primary-900 p-5 shadow-[0_18px_40px_rgba(0,0,0,0.45)]">
+            <p className="text-base font-semibold text-white">{t("trades.journal.conflictModal.title")}</p>
+            <p className="mt-2 text-sm text-primary-200">
+              {t("trades.journal.conflictModal.description", {
+                date: conflictJournalDate
+                  ? formatJournalDate(conflictJournalDate, i18n.language)
+                  : "--",
+              })}
+            </p>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <Button type="button" variant="secondary" onClick={handleCancelJournalConflict}>
+                {t("trades.journal.conflictModal.cancel")}
+              </Button>
+              <Button
+                type="button"
+                variant="light"
+                onClick={handleOpenConflictJournalForEdit}
+                isLoading={isOpeningExistingJournal}
+              >
+                {t("trades.journal.conflictModal.edit")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeReplaySession && (
         <div className="fixed inset-0 z-70 flex bg-primary-950">
-          <aside className="flex w-20 shrink-0 flex-col items-center border-r border-black bg-black px-3 py-4">
+          <aside className="relative z-30 flex w-20 shrink-0 flex-col items-center border-r border-black bg-black px-3 py-4">
             <button
               type="button"
               onClick={handleRequestExitReplay}
@@ -819,6 +1323,54 @@ export function DashboardTabsPage() {
                 priority
               />
             </button>
+
+            <div className="mt-6 flex w-full flex-col items-center gap-3">
+              {replaySidebarItems.map(({ key, label, Icon, svgSrc }) => {
+                const isActive = activeReplaySidebarTool === key;
+
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setActiveReplaySidebarTool(key)}
+                    className={cn(
+                      "group relative inline-flex h-11 w-11 items-center justify-center rounded-xl transition",
+                      isActive
+                        ? "text-white"
+                        : "text-white/45"
+                    )}
+                    aria-label={label}
+                    title={label}
+                  >
+                    {svgSrc ? (
+                      <Image
+                        src={svgSrc}
+                        alt={label}
+                        width={22}
+                        height={22}
+                        className={cn(
+                            "h-5.5 w-5.5 object-contain transition",
+                          isActive
+                            ? "brightness-0 invert opacity-100"
+                            : "brightness-0 invert opacity-45"
+                        )}
+                      />
+                    ) : (
+                      Icon && (
+                        <Icon
+                          size={22}
+                          weight={isActive ? "duotone" : "regular"}
+                          className={cn(isActive ? "opacity-100" : "opacity-70")}
+                        />
+                      )
+                    )}
+                    <span className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-120 -translate-y-1/2 whitespace-nowrap rounded-md border border-primary-700/70 bg-primary-950/95 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                      {label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
             <button
               type="button"
@@ -848,6 +1400,9 @@ export function DashboardTabsPage() {
                 <div className="mt-5 flex justify-center gap-2">
                   <Button type="button" variant="light" onClick={handleCancelExitReplay}>
                     {t("trades.replay.stay")}
+                  </Button>
+                  <Button type="button" variant="secondary" onClick={handlePauseExitReplay}>
+                    {t("trades.replay.pause")}
                   </Button>
                   <Button type="button" variant="destructive" onClick={handleConfirmExitReplay}>
                     {t("trades.replay.end")}
@@ -930,7 +1485,7 @@ function SessionsTabSkeleton() {
       {Array.from({ length: SESSIONS_PAGE_SIZE }).map((_, index) => (
         <div
           key={`trades-sessions-skeleton-${index}`}
-          className="rounded-xl bg-primary-950/50 p-4"
+          className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
         >
           <div className="flex items-center justify-between gap-2">
             <Skeleton className="h-4 w-44 rounded" />
@@ -948,6 +1503,314 @@ function SessionsTabSkeleton() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function JournalsTabSkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <div
+          key={`trades-journals-skeleton-${index}`}
+          className="rounded-2xl bg-primary-900/60 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-44 rounded" />
+              <Skeleton className="h-3 w-28 rounded" />
+            </div>
+            <Skeleton className="h-9 w-28 rounded-xl" />
+          </div>
+          <div className="mt-3 space-y-2">
+            <Skeleton className="h-3 w-full rounded" />
+            <Skeleton className="h-3 w-5/6 rounded" />
+          </div>
+          <Skeleton className="mt-3 h-3 w-40 rounded" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type JournalEditorModalProps = {
+  isOpen: boolean;
+  mode: "create" | "edit";
+  titleValue: string;
+  contentValue: string;
+  onTitleChange: (value: string) => void;
+  onContentChange: (value: string) => void;
+  onClose: () => void;
+  onSave: () => void;
+  isSaving: boolean;
+  disableSave?: boolean;
+  saveLabel: string;
+  modalTitle: string;
+  titlePlaceholder: string;
+  contentPlaceholder: string;
+  dateLabel?: string;
+  dateValue?: string;
+  dateDisplayValue?: string;
+  showDateField?: boolean;
+  dateEditable?: boolean;
+  datePickerOpen?: boolean;
+  onDatePickerOpenChange?: (nextIsOpen: boolean) => void;
+  onDateChange?: (nextDate: string) => void;
+};
+
+function JournalEditorModal({
+  isOpen,
+  mode,
+  titleValue,
+  contentValue,
+  onTitleChange,
+  onContentChange,
+  onClose,
+  onSave,
+  isSaving,
+  disableSave = false,
+  saveLabel,
+  modalTitle,
+  titlePlaceholder,
+  contentPlaceholder,
+  dateLabel,
+  dateValue,
+  dateDisplayValue,
+  showDateField = false,
+  dateEditable = false,
+  datePickerOpen,
+  onDatePickerOpenChange,
+  onDateChange,
+}: JournalEditorModalProps) {
+  const { t } = useTranslation();
+  const editorRef = useRef<HTMLDivElement | null>(null);
+  const shouldCloseOnBackdropRef = useRef(false);
+  const [activeColor, setActiveColor] = useState("#FFFFFF");
+  const basicColors = ["#FFFFFF", "#F87171", "#FBBF24", "#4ADE80", "#60A5FA", "#A78BFA"];
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const normalizedHtml = toJournalEditorHtml(contentValue);
+    if (editor.innerHTML !== normalizedHtml) {
+      editor.innerHTML = normalizedHtml;
+    }
+  }, [contentValue, isOpen]);
+
+  if (!isOpen) return null;
+
+  const syncEditorContent = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    onContentChange(editor.innerHTML);
+  };
+
+  const focusEditor = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.focus();
+  };
+
+  const applyCommand = (command: string, value?: string) => {
+    focusEditor();
+    document.execCommand(command, false, value);
+    syncEditorContent();
+  };
+
+  const unwrapSelectedBlockquotes = () => {
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    if (!editor || !selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const blockquotes = Array.from(editor.querySelectorAll("blockquote")).filter((node) => {
+      try {
+        return range.intersectsNode(node);
+      } catch {
+        return false;
+      }
+    });
+
+    blockquotes.forEach((quote) => {
+      const fragment = document.createDocumentFragment();
+      while (quote.firstChild) {
+        fragment.appendChild(quote.firstChild);
+      }
+      quote.replaceWith(fragment);
+    });
+  };
+
+  const toggleBlockquote = () => {
+    applyCommand("formatBlock", "blockquote");
+  };
+
+  const applyColor = (color: string) => {
+    setActiveColor(color);
+    applyCommand("foreColor", color);
+  };
+
+  const clearFormatting = () => {
+    focusEditor();
+    document.execCommand("removeFormat", false);
+    document.execCommand("unlink", false);
+    unwrapSelectedBlockquotes();
+    syncEditorContent();
+  };
+
+  const handlePaste = (event: ReactClipboardEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const pastedText = event.clipboardData.getData("text/plain");
+    applyCommand("insertText", pastedText);
+  };
+
+  const isEditorEmpty = isRichTextEffectivelyEmpty(contentValue);
+
+  const toolbarButtonClassName =
+    "rounded px-2 py-1 text-xs font-semibold text-primary-100 transition hover:bg-white/10";
+  const segmentedToolbarClassName =
+    "flex items-center gap-1 rounded-md border border-[#d1d5db]/35 bg-[#111b2a]/80 px-1.5 py-1";
+
+  const stopMouseDownBlur = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-70 flex items-center justify-center bg-black/60 p-3 sm:p-6"
+      onMouseDown={(event) => {
+        shouldCloseOnBackdropRef.current = event.target === event.currentTarget;
+      }}
+      onMouseUp={(event) => {
+        const shouldClose =
+          shouldCloseOnBackdropRef.current && event.target === event.currentTarget;
+        shouldCloseOnBackdropRef.current = false;
+        if (shouldClose) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="w-full max-w-6xl rounded-xl border border-[#d1d5db]/80 bg-[#0D1520] shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#d1d5db]/45 px-3 py-2 sm:px-4">
+          <p className="text-sm font-semibold text-white">{modalTitle}</p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary-100 transition hover:bg-white/10 hover:text-white"
+            aria-label={t("history.calendar.journalEditor.aria.close")}
+          >
+            <XIcon size={16} weight="bold" />
+          </button>
+        </div>
+
+        <div className="space-y-3 px-3 py-3 sm:px-4 sm:py-4">
+          {showDateField && dateLabel && (
+            dateEditable ? (
+              <DatePicker
+                label={dateLabel}
+                value={dateValue ?? ""}
+                isOpen={datePickerOpen}
+                onOpenChange={(nextIsOpen) => onDatePickerOpenChange?.(nextIsOpen)}
+                onChange={(event) => onDateChange?.(event.target.value)}
+              />
+            ) : (
+              <div className="flex flex-col gap-2 text-sm text-primary-100">
+                <span className="font-medium">{dateLabel}</span>
+                <div className="rounded-md border border-[#d1d5db]/45 bg-[#0D1520] px-3 py-2 text-sm text-white">
+                  {dateDisplayValue || dateValue || "--"}
+                </div>
+              </div>
+            )
+          )}
+
+          <input
+            type="text"
+            value={titleValue}
+            onChange={(event) => onTitleChange(event.target.value)}
+            placeholder={titlePlaceholder}
+            className="w-full rounded-md border border-[#d1d5db]/45 bg-[#0D1520] px-3 py-2 text-sm text-white placeholder:text-primary-400 focus:border-[#7AB8EC] focus:outline-none"
+          />
+
+          <div className="overflow-hidden rounded-md border border-[#d1d5db]/70 bg-[#0B1320]">
+            <div className="flex flex-wrap items-center gap-2 border-b border-[#d1d5db]/45 px-2 py-1.5">
+              <div className={segmentedToolbarClassName}>
+                <button type="button" onMouseDown={stopMouseDownBlur} onClick={() => applyCommand("bold")} className={toolbarButtonClassName}>B</button>
+                <button type="button" onMouseDown={stopMouseDownBlur} onClick={() => applyCommand("italic")} className={toolbarButtonClassName}>I</button>
+                <button type="button" onMouseDown={stopMouseDownBlur} onClick={() => applyCommand("underline")} className={toolbarButtonClassName}>U</button>
+              </div>
+
+              <div className={segmentedToolbarClassName}>
+                <button type="button" onMouseDown={stopMouseDownBlur} onClick={() => applyCommand("insertUnorderedList")} className={toolbarButtonClassName}>{t("history.calendar.journalEditor.toolbar.list")}</button>
+                <button type="button" onMouseDown={stopMouseDownBlur} onClick={() => applyCommand("insertOrderedList")} className={toolbarButtonClassName}>{t("history.calendar.journalEditor.toolbar.numberedList")}</button>
+                <button type="button" onMouseDown={stopMouseDownBlur} onClick={toggleBlockquote} className={toolbarButtonClassName}>{t("history.calendar.journalEditor.toolbar.quote")}</button>
+              </div>
+
+              <div className={segmentedToolbarClassName}>
+                <button type="button" onMouseDown={stopMouseDownBlur} onClick={clearFormatting} className={toolbarButtonClassName}>{t("history.calendar.journalEditor.toolbar.clear")}</button>
+              </div>
+
+              <div className="flex items-center gap-1 rounded-md border border-[#d1d5db]/35 bg-[#111b2a]/80 px-2 py-1">
+                <span className="text-[11px] font-semibold text-primary-300">{t("history.calendar.journalEditor.toolbar.color")}</span>
+                {basicColors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onMouseDown={stopMouseDownBlur}
+                    onClick={() => applyColor(color)}
+                    aria-label={t("history.calendar.journalEditor.aria.applyColor", { color })}
+                    className="h-5 w-5 rounded-full border transition"
+                    style={{
+                      backgroundColor: color,
+                      borderColor: activeColor === color ? "#f8fafc" : "rgba(209,213,219,0.35)",
+                      boxShadow: activeColor === color ? "0 0 0 1px rgba(255,255,255,0.75)" : "none",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              {isEditorEmpty && (
+                <p className="pointer-events-none absolute left-3 top-3 text-sm text-primary-500">
+                  {contentPlaceholder}
+                </p>
+              )}
+
+              <div
+                ref={editorRef}
+                contentEditable
+                suppressContentEditableWarning
+                onInput={syncEditorContent}
+                onBlur={syncEditorContent}
+                onPaste={handlePaste}
+                className="min-h-65 w-full bg-[#0B1320] px-3 py-3 text-sm leading-6 text-white focus:outline-none [&_blockquote]:my-2 [&_blockquote]:border-l-3 [&_blockquote]:border-primary-400/75 [&_blockquote]:pl-3 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={isSaving || disableSave || isEditorEmpty}
+              aria-label={
+                mode === "edit"
+                  ? t("history.calendar.journalEditor.aria.saveEdited")
+                  : t("history.calendar.journalEditor.aria.saveNew")
+              }
+              className="inline-flex items-center gap-1 rounded-md bg-[#E1B74F] px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#35280A] transition hover:brightness-110 disabled:opacity-60"
+            >
+              <PlusIcon size={14} weight="bold" />
+              {saveLabel}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1009,13 +1872,17 @@ function BarChart({ data, labels, color, valueSuffix = "" }: BarChartProps) {
   const animationSeed = useMemo(() => `${labels.join("|")}::${data.join("|")}::${valueSuffix}`, [data, labels, valueSuffix]);
 
   useEffect(() => {
-    setIsAnimated(false);
-    const frame = window.requestAnimationFrame(() => {
-      setIsAnimated(true);
+    let animateFrame = 0;
+    const resetFrame = window.requestAnimationFrame(() => {
+      setIsAnimated(false);
+      animateFrame = window.requestAnimationFrame(() => {
+        setIsAnimated(true);
+      });
     });
 
     return () => {
-      window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(resetFrame);
+      window.cancelAnimationFrame(animateFrame);
     };
   }, [animationSeed]);
 
@@ -1272,9 +2139,41 @@ function inferSessionSlot(startedAt: string | undefined): SessionSlot {
 }
 
 function mapBackendSessionStatusToLocal(status: string | undefined): MarketSessionRecord["status"] {
-  const normalized = (status || "").toUpperCase();
-  if (normalized === "COMPLETED" || normalized === "CANCELED") return "completed";
-  return "active";
+  const normalized = normalizeSessionStatus(status);
+  if (
+    normalized === "DRAFT" ||
+    normalized === "IN_PROGRESS" ||
+    normalized === "ACTIVE" ||
+    normalized === "OPEN"
+  ) {
+    return "active";
+  }
+
+  return "completed";
+}
+
+function normalizeSessionStatus(status: string | undefined): SessionStatus {
+  const normalized = (status || "").trim().toUpperCase();
+  return normalized || "IN_PROGRESS";
+}
+
+function isEditableSessionStatus(status: string | undefined): boolean {
+  const normalized = normalizeSessionStatus(status);
+  return normalized === "IN_PROGRESS" || normalized === "DRAFT";
+}
+
+function getReplayDate(value: string | undefined | null): string | null {
+  if (!value) return null;
+
+  const directMatch = value.match(/^\d{4}-\d{2}-\d{2}$/);
+  if (directMatch) {
+    return directMatch[0];
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) return null;
+
+  return toISODate(parsedDate);
 }
 
 function normalizeSessionSlot(value: string | undefined, startedAt: string | undefined): SessionSlot {
@@ -1293,12 +2192,23 @@ function normalizeSessionSlot(value: string | undefined, startedAt: string | und
 }
 
 function mapSessionFromApi(session: SessionRecordResponse): MarketSessionRecord {
+  const startDate = getReplayDate(session.startDate || session.startedAt) || getDefaultStartDate();
+  const endDate = getReplayDate(session.endDate || session.endedAt);
+
   return {
     id: session.id,
     name: session.name,
     symbol: session.marketSymbol,
     session: normalizeSessionSlot(session.sessionSlot, session.startedAt || session.startDate),
     status: mapBackendSessionStatusToLocal(session.status),
+    backendStatus: normalizeSessionStatus(session.status),
+    startDate,
+    endDate,
+    accountBalanceStart: Number(session.accountBalanceStart ?? 0),
+    accountBalanceEnd:
+      session.accountBalanceEnd === null || session.accountBalanceEnd === undefined
+        ? null
+        : Number(session.accountBalanceEnd),
     startedAt: session.startedAt || session.startDate,
     endedAt: session.endedAt || undefined,
     timeframe: session.timeframe,
@@ -1320,6 +2230,86 @@ function formatMonthLabel(month: string, language: string) {
   return new Intl.DateTimeFormat(locale, { month: "short" }).format(
     new Date(Date.UTC(Number(year) || 1970, monthIndex, 1))
   );
+}
+
+function formatJournalDate(value: string, language: string) {
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) return value;
+
+  return new Intl.DateTimeFormat(getLocale(language), {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(parsed);
+}
+
+function formatJournalTimestamp(value: string, language: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+
+  return new Intl.DateTimeFormat(getLocale(language), {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(parsed);
+}
+
+function stripHtmlForPreview(value: string) {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function normalizeJournalEditorContent(value: string) {
+  const normalized = stripUnsafeJournalHtml(value.trim());
+  return looksLikeHtmlContent(normalized)
+    ? normalized
+    : escapeHtml(normalized).replace(/\n/g, "<br />");
+}
+
+function toJournalEditorHtml(value: string) {
+  const normalized = stripUnsafeJournalHtml(value.trim());
+  if (!normalized) return "";
+
+  return looksLikeHtmlContent(normalized)
+    ? normalized
+    : escapeHtml(normalized).replace(/\n/g, "<br />");
+}
+
+function isRichTextEffectivelyEmpty(value: string) {
+  const plainText = value
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return plainText.length === 0;
+}
+
+function stripUnsafeJournalHtml(value: string) {
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/\son[a-z]+=\"[^\"]*\"/gi, "")
+    .replace(/\son[a-z]+=\'[^\']*\'/gi, "")
+    .replace(/\son[a-z]+=[^\s>]+/gi, "")
+    .replace(/javascript:/gi, "");
+}
+
+function looksLikeHtmlContent(value: string) {
+  return /<\/?[a-z][\s\S]*>/i.test(value) || /&[a-z0-9#]+;/i.test(value);
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function normalizeTimeframe(value: string) {

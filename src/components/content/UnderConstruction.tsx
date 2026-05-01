@@ -7,7 +7,7 @@ export function UnderConstruction() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl bg-primary-900/40 p-6">
+    <div className="flex flex-col gap-4 rounded-2xl bg-primary-900/60 p-6 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
       <div className="flex items-center gap-3 text-secondary-300">
         <WarningCircleIcon size={28} weight="duotone" />
         <span className="text-lg font-semibold">{t("status.underConstruction")}</span>

@@ -87,7 +87,7 @@ export default function NewsPage() {
     <div className="flex flex-col gap-6 pb-2">
       <PageTitle>{t("news.title")}</PageTitle>
 
-      <div className="rounded-2xl border border-primary-800/70 bg-primary-900/60 p-5 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+      <div className="rounded-2xl bg-primary-900/60 p-5 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm text-primary-200">{t("news.subtitle")}</p>
@@ -128,7 +128,7 @@ export default function NewsPage() {
           {isLoading && <NewsListSkeleton />}
 
           {!isLoading && !news.length && (
-            <div className="rounded-xl border border-primary-800/70 bg-primary-950/40 px-4 py-6 text-center text-sm text-primary-300">
+            <div className="rounded-2xl bg-primary-900/60 px-4 py-6 text-center text-sm text-primary-300 shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
               {t("news.empty", { topic: t(`news.filters.${topic}`) })}
             </div>
           )}
@@ -137,7 +137,7 @@ export default function NewsPage() {
             news.map((article) => (
               <article
                 key={article.id}
-                className="rounded-2xl border border-primary-800/70 bg-primary-950/50 p-3 shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
+                className="rounded-2xl bg-primary-900/60 p-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
               >
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <div className="h-40 w-full shrink-0 overflow-hidden rounded-xl border border-primary-800/70 bg-primary-900/60 sm:h-28 sm:w-44">
@@ -215,7 +215,7 @@ function NewsListSkeleton() {
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={`news-skeleton-${index}`}
-          className="rounded-2xl border border-primary-800/70 bg-primary-950/50 p-3 shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
+          className="rounded-2xl bg-primary-900/60 p-3 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
         >
           <div className="flex flex-col gap-3 sm:flex-row">
             <Skeleton className="h-40 w-full shrink-0 rounded-xl border-primary-800/70 sm:h-28 sm:w-44" />
