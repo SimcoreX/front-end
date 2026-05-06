@@ -367,6 +367,12 @@
       "page": "Página {{page}}",
       "previous": "Anterior",
       "next": "Siguiente",
+      "filters": {
+        "label": "Estado",
+        "all": "Todas",
+        "completed": "Finalizadas",
+        "active": "Activas"
+      },
       "status": {
         "active": "Activa",
         "completed": "Finalizada"

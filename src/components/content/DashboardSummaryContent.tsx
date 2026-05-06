@@ -491,7 +491,7 @@ export function DashboardSummaryContent() {
                             Buys {formatPercentagePtBr(tradesTakenSummary.buyPercentage)}
                           </span>
                           <span className="text-primary-500">-</span>
-                          <span className="font-semibold text-blue-400">
+                          <span className="font-semibold text-red-400">
                             Sells {formatPercentagePtBr(tradesTakenSummary.sellPercentage)}
                           </span>
                         </span>
@@ -501,7 +501,7 @@ export function DashboardSummaryContent() {
                             style={{ width: `${buyTakenTradeShare}%` }}
                           />
                           <span
-                            className="absolute inset-y-0 right-0 bg-blue-500/85"
+                            className="absolute inset-y-0 right-0 bg-red-500/85"
                             style={{ width: `${sellTakenTradeShare}%` }}
                           />
                         </span>

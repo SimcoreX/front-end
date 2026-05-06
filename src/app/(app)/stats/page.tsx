@@ -147,7 +147,7 @@ export default function HistoryPage() {
     winRate: "#22C55E",
     avgPnl: "#FBBF24",
     sideBuy: "#10B981",
-    sideSell: "#3B82F6",
+    sideSell: "#EF4444",
   };
 
   useEffect(() => {
@@ -1476,7 +1476,7 @@ export default function HistoryPage() {
 
       {isCalendarOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 p-3 backdrop-blur-[1px] sm:p-5">
-          <div className="mx-auto flex h-full max-w-450 flex-col overflow-hidden rounded-2xl border border-[#2E5C8A]/50 bg-[#1B314B] p-3 sm:p-4 shadow-[0_18px_40px_rgba(0,0,0,0.45)]">
+          <div className="mx-auto flex h-full max-w-450 flex-col overflow-hidden rounded-2xl border border-white/35 bg-black p-3 sm:p-4 shadow-[0_18px_40px_rgba(0,0,0,0.45)]">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-primary-200">{t("history.title")}</p>
@@ -1491,7 +1491,7 @@ export default function HistoryPage() {
                     setSelectedCalendarDate(null);
                     setIsCalendarOpen(false);
                   }}
-                  className="rounded-xl border border-primary-700/70 px-2.5 py-1.5 text-xs font-semibold text-primary-100 transition hover:border-primary-500/70 hover:text-white sm:px-3 sm:py-2 sm:text-sm"
+                  className="rounded-xl border border-white/35 px-2.5 py-1.5 text-xs font-semibold text-zinc-100 transition hover:border-white hover:text-white sm:px-3 sm:py-2 sm:text-sm"
                 >
                   {t("history.calendar.close")}
                 </button>
@@ -1504,7 +1504,7 @@ export default function HistoryPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedCalendarDate(null)}
-                    className="inline-flex items-center gap-1 px-1 py-1 text-xs font-semibold text-primary-200 transition hover:text-white"
+                    className="inline-flex items-center gap-1 px-1 py-1 text-xs font-semibold text-zinc-300 transition hover:text-white"
                   >
                     <ArrowLeftIcon size={14} weight="bold" />
                     {t("history.calendar.backToCalendar")}
@@ -1513,7 +1513,7 @@ export default function HistoryPage() {
                     <button
                       type="button"
                       onClick={() => handleNavigateSelectedDay(-1)}
-                      className="inline-flex items-center gap-1 px-1 py-1 text-xs font-semibold text-primary-200 transition hover:text-white"
+                      className="inline-flex items-center gap-1 px-1 py-1 text-xs font-semibold text-zinc-300 transition hover:text-white"
                     >
                       <ArrowLeftIcon size={14} weight="bold" />
                       {t("history.calendar.prevDay")}
@@ -1521,7 +1521,7 @@ export default function HistoryPage() {
                     <button
                       type="button"
                       onClick={() => handleNavigateSelectedDay(1)}
-                      className="inline-flex items-center gap-1 px-1 py-1 text-xs font-semibold text-primary-200 transition hover:text-white"
+                      className="inline-flex items-center gap-1 px-1 py-1 text-xs font-semibold text-zinc-300 transition hover:text-white"
                     >
                       {t("history.calendar.nextDay")}
                       <ArrowRightIcon size={14} weight="bold" />
@@ -1529,7 +1529,7 @@ export default function HistoryPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-[#2E5C8A]/45 bg-[#102238]/70 p-3 sm:p-4">
+                <div className="rounded-2xl border border-white/20 bg-black p-3 sm:p-4">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-white sm:text-base">
                       {t("history.calendar.dayPerformance", {
@@ -1618,8 +1618,8 @@ export default function HistoryPage() {
                             width={132}
                             height={36}
                             rx={10}
-                            fill="rgba(13,27,42,0.96)"
-                            stroke="rgba(46,92,138,0.8)"
+                            fill="rgba(0,0,0,0.96)"
+                            stroke="rgba(255,255,255,0.45)"
                             strokeWidth={1}
                           />
                           <text
@@ -1697,7 +1697,7 @@ export default function HistoryPage() {
                   </div>
                 )}
 
-                <div className="rounded-2xl border border-[#2E5C8A]/45 bg-[#102238]/70 p-3 sm:p-4">
+                <div className="rounded-2xl border border-white/20 bg-black p-3 sm:p-4">
                   <p className="text-lg font-semibold text-white sm:text-xl">
                     {t("history.calendar.trades", { count: selectedDayTradesOrdered.length })}
                   </p>
@@ -1705,9 +1705,9 @@ export default function HistoryPage() {
                   {selectedDayTradesOrdered.length === 0 ? (
                     <p className="mt-4 text-sm text-primary-300">{t("history.calendar.noTrades")}</p>
                   ) : (
-                    <div className="mt-4 w-full overflow-x-auto rounded-xl border border-[#2E5C8A]/40">
+                    <div className="mt-4 w-full overflow-x-auto rounded-xl border border-white/20">
                       <table className="w-full min-w-full border-collapse text-left text-xs sm:text-sm">
-                        <thead className="bg-[#13273d] text-primary-200">
+                        <thead className="bg-zinc-950 text-zinc-300">
                           <tr>
                             <th className="px-3 py-2">{t("history.calendar.table.id")}</th>
                             <th className="px-3 py-2">{t("history.calendar.table.symbol")}</th>
@@ -1731,7 +1731,7 @@ export default function HistoryPage() {
                               : "--";
 
                             return (
-                              <tr key={trade.id} className="border-t border-[#2E5C8A]/35 bg-[#0F2133]/70">
+                              <tr key={trade.id} className="border-t border-white/10 bg-black">
                                 <td className="px-3 py-2 text-primary-100">{trade.id.slice(0, 10)}...</td>
                                 <td className="px-3 py-2 text-white">{trade.symbol}</td>
                                 <td className="px-3 py-2 text-primary-300">--</td>
@@ -1761,13 +1761,13 @@ export default function HistoryPage() {
                   )}
 
                   <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                    <div className="rounded-xl border border-[#2E5C8A]/35 bg-[#13273d] px-3 py-2 text-sm text-primary-100">
+                    <div className="rounded-xl border border-white/15 bg-black px-3 py-2 text-sm text-zinc-100">
                       {t("history.calendar.trades", { count: selectedDayTrades.length })}
                     </div>
-                    <div className="rounded-xl border border-[#2E5C8A]/35 bg-[#13273d] px-3 py-2 text-sm text-green-300">
+                    <div className="rounded-xl border border-white/15 bg-black px-3 py-2 text-sm text-green-300">
                       {t("history.calendar.wins", { count: selectedDaySummary.wins })}
                     </div>
-                    <div className={cn("rounded-xl border border-[#2E5C8A]/35 bg-[#13273d] px-3 py-2 text-sm", selectedDaySummary.pnl >= 0 ? "text-green-300" : "text-red-300")}>
+                    <div className={cn("rounded-xl border border-white/15 bg-black px-3 py-2 text-sm", selectedDaySummary.pnl >= 0 ? "text-green-300" : "text-red-300")}>
                       {t("history.summary.totalPnl")}: {formatMoney(selectedDaySummary.pnl)}
                     </div>
                   </div>
@@ -1816,7 +1816,7 @@ export default function HistoryPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-7 gap-1 rounded-xl border border-[#2E5C8A]/25 bg-[#102238]/55 px-1.5 py-1 text-center text-[9px] uppercase tracking-[0.12em] text-primary-300 sm:gap-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-[10px] sm:tracking-[0.2em]">
+                <div className="grid grid-cols-7 gap-1 rounded-xl border border-white/20 bg-black px-1.5 py-1 text-center text-[9px] uppercase tracking-[0.12em] text-zinc-400 sm:gap-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-[10px] sm:tracking-[0.2em]">
                   {calendarWeekdays.map((day) => (
                     <span key={day}>{day}</span>
                   ))}
@@ -1830,15 +1830,22 @@ export default function HistoryPage() {
                       return (
                         <div
                           key={day.key}
-                          className="min-h-20 rounded-2xl border border-[#2E5C8A]/15 bg-[#102238]/35 sm:min-h-28"
+                          className="min-h-20 rounded-2xl border border-white/30 bg-black sm:min-h-28"
                           aria-hidden
                         />
                       );
                     }
 
                     const hasTrades = day.stats.totalTrades > 0;
-                    const hasResolvedTrades = day.stats.resolvedTrades > 0;
-                    const isWinDay = day.stats.pnl >= 0;
+                    const isPositiveDay = day.stats.pnl > 0;
+                    const isNegativeDay = day.stats.pnl < 0;
+                    const dayContainerClass = !hasTrades
+                      ? "bg-zinc-800"
+                      : isPositiveDay
+                        ? "bg-emerald-700/70"
+                        : isNegativeDay
+                          ? "bg-red-700/70"
+                          : "bg-zinc-800";
 
                     return (
                       <button
@@ -1846,55 +1853,32 @@ export default function HistoryPage() {
                         type="button"
                         onClick={() => handleSelectCalendarDate(dayValue)}
                         className={cn(
-                          "group relative flex min-h-20 flex-col justify-between overflow-hidden rounded-2xl border p-1 text-left transition sm:min-h-28 sm:p-2",
-                          hasTrades
-                            ? "bg-linear-to-b from-[#204164]/90 to-[#17324f]/95"
-                            : "bg-[#142a40]/65",
-                          "border-[#2E5C8A]/30 hover:border-[#4C87BA]/70",
-                          !hasTrades && "opacity-85"
+                          "group relative flex min-h-20 flex-col overflow-hidden rounded-2xl border border-white/80 bg-black p-0 text-left transition-colors duration-200 hover:border-white sm:min-h-28"
                         )}
                       >
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#0f2236]/75 text-[10px] font-semibold text-primary-100 group-hover:bg-[#17324f] sm:h-6 sm:w-6 sm:text-xs">
+                        <div className={cn("flex h-full w-full flex-1 flex-col rounded-[15px] p-1.5 transition duration-200 group-hover:brightness-110 sm:p-2", dayContainerClass)}>
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-black/55 text-[10px] font-semibold text-white sm:h-6 sm:w-6 sm:text-xs">
                             {day.label}
                           </span>
 
-                          {day.stats.totalTrades > 0 && (
-                            <span className="rounded-full border border-[#63A1D3]/45 bg-[#12314d]/85 px-1.5 py-0.5 text-[9px] font-semibold text-[#C7E4FF] sm:text-[10px]">
-                              {day.stats.totalTrades}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="mt-auto flex items-center gap-1 sm:hidden">
-                          <span
-                            className={cn(
-                              "h-1.5 w-1.5 rounded-full",
-                              hasTrades ? "bg-[#63A1D3]" : "bg-primary-700"
-                            )}
-                            aria-hidden
-                          />
-                          {day.stats.wins > 0 && <span className="h-1.5 w-1.5 rounded-full bg-green-400" aria-hidden />}
-                          {day.stats.losses > 0 && <span className="h-1.5 w-1.5 rounded-full bg-red-400" aria-hidden />}
-                        </div>
-
-                        <div className="mt-auto hidden flex-wrap items-center gap-1 text-[10px] sm:flex">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-[#14324f] px-1.5 py-0.5 text-[#C7E4FF]">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[#63A1D3]" aria-hidden />
-                            {day.stats.totalTrades}
-                          </span>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-1.5 py-0.5 text-green-300">
-                            <span className="h-1.5 w-1.5 rounded-full bg-green-400" aria-hidden />
-                            {day.stats.wins}
-                          </span>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-1.5 py-0.5 text-red-300">
-                            <span className="h-1.5 w-1.5 rounded-full bg-red-400" aria-hidden />
-                            {day.stats.losses}
-                          </span>
-                          {hasResolvedTrades && (
-                            <span className={cn("inline-flex rounded-full px-1.5 py-0.5 font-semibold", isWinDay ? "bg-green-500/15 text-green-300" : "bg-red-500/15 text-red-300")}>
-                              {isWinDay ? t("history.calendar.winDay") : t("history.calendar.lossDay")}
-                            </span>
+                          {hasTrades && (
+                            <div className="flex flex-1 flex-col items-center justify-center gap-1 text-center">
+                              <p
+                                className={cn(
+                                  "text-xl font-extrabold leading-none sm:text-2xl",
+                                  isPositiveDay
+                                    ? "text-emerald-200"
+                                    : isNegativeDay
+                                      ? "text-rose-200"
+                                      : "text-zinc-100"
+                                )}
+                              >
+                                {formatMoney(day.stats.pnl)}
+                              </p>
+                              <p className="text-[10px] font-medium text-zinc-300 sm:text-xs">
+                                {t("history.calendar.trades", { count: day.stats.totalTrades })}
+                              </p>
+                            </div>
                           )}
                         </div>
                       </button>
@@ -1971,7 +1955,7 @@ function DayJournalPanel({
   const journalHtml = journalText ? toJournalDisplayHtml(journalText) : "";
 
   return (
-    <div className="rounded-2xl border border-[#2E5C8A]/45 bg-[#102238]/70 p-3 sm:p-4">
+    <div className="rounded-2xl border border-white/20 bg-black p-3 sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-2xl font-bold text-white sm:text-3xl">{title}</p>
 
@@ -1982,7 +1966,7 @@ function DayJournalPanel({
                 type="button"
                 onClick={onEdit}
                 disabled={loading || saving || deleting || actionsDisabled}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#2E5C8A]/60 bg-[#0D1B2A] text-primary-100 transition hover:border-[#7AB8EC]/70 hover:text-white disabled:opacity-60"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-black text-zinc-100 transition hover:border-white hover:text-white disabled:opacity-60"
                 aria-label={t("history.calendar.journalEditor.aria.editButton")}
               >
                 <PencilSimpleIcon size={16} weight="bold" />
@@ -1991,7 +1975,7 @@ function DayJournalPanel({
                 type="button"
                 onClick={onDelete}
                 disabled={loading || saving || deleting || actionsDisabled}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#2E5C8A]/60 bg-[#0D1B2A] text-red-300 transition hover:border-red-400/70 hover:text-red-200 disabled:opacity-60"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-black text-red-300 transition hover:border-red-400/70 hover:text-red-200 disabled:opacity-60"
                 aria-label={t("history.calendar.journalEditor.aria.deleteButton")}
               >
                 <TrashIcon size={16} weight="bold" />
@@ -2014,24 +1998,24 @@ function DayJournalPanel({
       {loading ? (
         <div className="mt-4 space-y-3">
           <div className="space-y-2">
-            <Skeleton mode="line" width="42%" className="bg-primary-700/55" />
-            <Skeleton mode="line" width="34%" className="bg-primary-700/45" />
+            <Skeleton mode="line" width="42%" className="bg-zinc-700/55" />
+            <Skeleton mode="line" width="34%" className="bg-zinc-700/45" />
           </div>
           <div className="space-y-2">
-            <Skeleton mode="line" width="100%" className="bg-primary-700/45" />
-            <Skeleton mode="line" width="88%" className="bg-primary-700/35" />
+            <Skeleton mode="line" width="100%" className="bg-zinc-700/45" />
+            <Skeleton mode="line" width="88%" className="bg-zinc-700/35" />
           </div>
         </div>
       ) : hasJournal ? (
         <div className="mt-4 space-y-2">
           {journalTitle && <p className="text-base font-semibold text-white">{journalTitle}</p>}
           <div
-            className="text-sm leading-6 text-primary-100 [&_blockquote]:my-2 [&_blockquote]:border-l-3 [&_blockquote]:border-primary-400/70 [&_blockquote]:pl-3 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5"
+            className="text-sm leading-6 text-zinc-100 [&_blockquote]:my-2 [&_blockquote]:border-l-3 [&_blockquote]:border-white/40 [&_blockquote]:pl-3 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5"
             dangerouslySetInnerHTML={{ __html: journalHtml }}
           />
         </div>
       ) : (
-        <p className="mt-4 text-sm text-primary-300">{noJournalLabel}</p>
+        <p className="mt-4 text-sm text-zinc-400">{noJournalLabel}</p>
       )}
     </div>
   );
@@ -2157,9 +2141,9 @@ function JournalEditorModal({
   const isEditorEmpty = isRichTextEffectivelyEmpty(contentValue);
 
   const toolbarButtonClassName =
-    "rounded px-2 py-1 text-xs font-semibold text-primary-100 transition hover:bg-white/10";
+    "rounded px-2 py-1 text-xs font-semibold text-zinc-100 transition hover:bg-white/10";
   const segmentedToolbarClassName =
-    "flex items-center gap-1 rounded-md border border-primary-700/60 bg-[#111b2a]/80 px-1.5 py-1";
+    "flex items-center gap-1 rounded-md border border-white/20 bg-black px-1.5 py-1";
 
   const stopMouseDownBlur = (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -2181,15 +2165,15 @@ function JournalEditorModal({
       }}
     >
       <div
-        className="w-full max-w-6xl rounded-xl border border-primary-700/70 bg-[#0D1520] shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+        className="w-full max-w-6xl rounded-xl border border-white/20 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-primary-700/60 px-3 py-2 sm:px-4">
+        <div className="flex items-center justify-between border-b border-white/15 px-3 py-2 sm:px-4">
           <p className="text-sm font-semibold text-white">{modalTitle}</p>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary-100 transition hover:bg-white/10 hover:text-white"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-200 transition hover:bg-white/10 hover:text-white"
             aria-label={t("history.calendar.journalEditor.aria.close")}
           >
             <XIcon size={16} weight="bold" />
@@ -2202,11 +2186,11 @@ function JournalEditorModal({
             value={titleValue}
             onChange={(event) => onTitleChange(event.target.value)}
             placeholder={titlePlaceholder}
-            className="w-full rounded-md border border-primary-700/60 bg-[#0D1520] px-3 py-2 text-sm text-white placeholder:text-primary-400 focus:border-primary-500/90 focus:outline-none"
+            className="w-full rounded-md border border-white/20 bg-black px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-white/60 focus:outline-none"
           />
 
-          <div className="overflow-hidden rounded-md border border-primary-700/70 bg-[#0B1320]">
-            <div className="flex flex-wrap items-center gap-2 border-b border-primary-700/60 px-2 py-1.5">
+          <div className="overflow-hidden rounded-md border border-white/20 bg-black">
+            <div className="flex flex-wrap items-center gap-2 border-b border-white/15 px-2 py-1.5">
               <div className={segmentedToolbarClassName}>
                 <button type="button" onMouseDown={stopMouseDownBlur} onClick={() => applyCommand("bold")} className={toolbarButtonClassName}>B</button>
                 <button type="button" onMouseDown={stopMouseDownBlur} onClick={() => applyCommand("italic")} className={toolbarButtonClassName}>I</button>
@@ -2223,8 +2207,8 @@ function JournalEditorModal({
                 <button type="button" onMouseDown={stopMouseDownBlur} onClick={clearFormatting} className={toolbarButtonClassName}>{t("history.calendar.journalEditor.toolbar.clear")}</button>
               </div>
 
-              <div className="flex items-center gap-1 rounded-md border border-primary-700/60 bg-[#111b2a]/80 px-2 py-1">
-                <span className="text-[11px] font-semibold text-primary-300">{t("history.calendar.journalEditor.toolbar.color")}</span>
+              <div className="flex items-center gap-1 rounded-md border border-white/20 bg-black px-2 py-1">
+                <span className="text-[11px] font-semibold text-zinc-300">{t("history.calendar.journalEditor.toolbar.color")}</span>
                 {basicColors.map((color) => (
                   <button
                     key={color}
@@ -2235,7 +2219,7 @@ function JournalEditorModal({
                     className="h-5 w-5 rounded-full border transition"
                     style={{
                       backgroundColor: color,
-                      borderColor: activeColor === color ? "#60A5FA" : "rgba(71,85,105,0.75)",
+                      borderColor: activeColor === color ? "#60A5FA" : "rgba(255,255,255,0.35)",
                       boxShadow: activeColor === color ? "0 0 0 1px rgba(96,165,250,0.65)" : "none",
                     }}
                   />
@@ -2245,7 +2229,7 @@ function JournalEditorModal({
 
             <div className="relative">
               {isEditorEmpty && (
-                <p className="pointer-events-none absolute left-3 top-3 text-sm text-primary-500">
+                <p className="pointer-events-none absolute left-3 top-3 text-sm text-zinc-500">
                   {contentPlaceholder}
                 </p>
               )}
@@ -2257,7 +2241,7 @@ function JournalEditorModal({
                 onInput={syncEditorContent}
                 onBlur={syncEditorContent}
                 onPaste={handlePaste}
-                className="min-h-65 w-full bg-[#0B1320] px-3 py-3 text-sm leading-6 text-white focus:outline-none [&_blockquote]:my-2 [&_blockquote]:border-l-3 [&_blockquote]:border-primary-400/75 [&_blockquote]:pl-3 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5"
+                className="min-h-65 w-full bg-black px-3 py-3 text-sm leading-6 text-white focus:outline-none [&_blockquote]:my-2 [&_blockquote]:border-l-3 [&_blockquote]:border-white/40 [&_blockquote]:pl-3 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5"
               />
             </div>
           </div>

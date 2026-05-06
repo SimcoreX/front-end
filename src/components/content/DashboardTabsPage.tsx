@@ -51,9 +51,14 @@ type MarketOption = {
 };
 
 type TabKey = (typeof tabs)[number]["key"];
+type SessionsStatusFilter = "all" | "active" | "completed";
 
 function isTabKey(value: string | null): value is TabKey {
   return tabs.some((tab) => tab.key === value);
+}
+
+function isSessionsStatusFilter(value: string): value is SessionsStatusFilter {
+  return value === "all" || value === "active" || value === "completed";
 }
 
 type NewSessionForm = {
@@ -113,6 +118,7 @@ export function DashboardTabsPage() {
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const [sessionsPage, setSessionsPage] = useState(1);
   const [sessionsHasNextPage, setSessionsHasNextPage] = useState(false);
+  const [sessionsStatusFilter, setSessionsStatusFilter] = useState<SessionsStatusFilter>("all");
   const [journals, setJournals] = useState<DayJournal[]>([]);
   const [isLoadingJournals, setIsLoadingJournals] = useState(false);
   const [hasJournalsError, setHasJournalsError] = useState(false);
@@ -206,19 +212,27 @@ export function DashboardTabsPage() {
     };
   }, []);
 
-  const loadSessionsData = useCallback(async (page = 1) => {
+  const loadSessionsData = useCallback(async (page = 1, statusFilter: SessionsStatusFilter = "all") => {
     setIsLoadingSessions(true);
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      const status = getSessionsApiStatusFilter(statusFilter);
       const response = await listSessions({
         page,
         limit: SESSIONS_PAGE_SIZE,
+        status,
         sortBy: "startedAt",
         sortOrder: "desc",
         timezone,
       });
-      setSessions((response.data ?? []).map(mapSessionFromApi));
+
+      const mappedSessions = (response.data ?? []).map(mapSessionFromApi);
+      setSessions(
+        statusFilter === "all"
+          ? mappedSessions
+          : mappedSessions.filter((session) => session.status === statusFilter)
+      );
       setSessionsPage(response.page || page);
       setSessionsHasNextPage(Boolean(response.hasNextPage));
     } catch {
@@ -290,9 +304,12 @@ export function DashboardTabsPage() {
   }, []);
 
   useEffect(() => {
-    loadSessionsData(1);
     loadSummaryData();
-  }, [loadSessionsData, loadSummaryData]);
+  }, [loadSummaryData]);
+
+  useEffect(() => {
+    loadSessionsData(1, sessionsStatusFilter);
+  }, [loadSessionsData, sessionsStatusFilter]);
 
   useEffect(() => {
     if (activeTab !== "journal") return;
@@ -368,14 +385,14 @@ export function DashboardTabsPage() {
         };
       });
 
-      void Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+      void Promise.all([loadSessionsData(sessionsPage, sessionsStatusFilter), loadSummaryData()]);
     };
 
     window.addEventListener(SESSION_CLOSED_EVENT, onSessionClosed);
     return () => {
       window.removeEventListener(SESSION_CLOSED_EVENT, onSessionClosed);
     };
-  }, [loadSessionsData, loadSummaryData, sessionsPage, t]);
+  }, [loadSessionsData, loadSummaryData, sessionsPage, sessionsStatusFilter, t]);
 
   const totalTimeInvested = formatDurationFromMinutes(summaryData.timeInvestedMinutes);
 
@@ -672,7 +689,7 @@ export function DashboardTabsPage() {
         accountBalanceStart: roundToTwoDecimals(parsedBalance),
       });
 
-      await Promise.all([loadSessionsData(1), loadSummaryData()]);
+      await Promise.all([loadSessionsData(1, sessionsStatusFilter), loadSummaryData()]);
       setStatusType(null);
       setStatusMessage(null);
       setIsNewSessionModalOpen(false);
@@ -704,7 +721,7 @@ export function DashboardTabsPage() {
     if (activeReplaySession.mode === "readonly") {
       setIsExitReplayModalOpen(false);
       setActiveReplaySession(null);
-      void Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+      void Promise.all([loadSessionsData(sessionsPage, sessionsStatusFilter), loadSummaryData()]);
       return;
     }
 
@@ -734,7 +751,7 @@ export function DashboardTabsPage() {
 
     setIsExitReplayModalOpen(false);
     setActiveReplaySession(null);
-    await Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+    await Promise.all([loadSessionsData(sessionsPage, sessionsStatusFilter), loadSummaryData()]);
   };
 
   const handleConfirmExitReplay = async () => {
@@ -743,7 +760,7 @@ export function DashboardTabsPage() {
     if (activeReplaySession.mode === "readonly") {
       setIsExitReplayModalOpen(false);
       setActiveReplaySession(null);
-      await Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+      await Promise.all([loadSessionsData(sessionsPage, sessionsStatusFilter), loadSummaryData()]);
       return;
     }
 
@@ -784,8 +801,15 @@ export function DashboardTabsPage() {
 
     setIsExitReplayModalOpen(false);
     setActiveReplaySession(null);
-    await Promise.all([loadSessionsData(sessionsPage), loadSummaryData()]);
+    await Promise.all([loadSessionsData(sessionsPage, sessionsStatusFilter), loadSummaryData()]);
   };
+
+  const handleSessionsStatusFilterChange = useCallback(
+    (nextFilter: SessionsStatusFilter) => {
+      setSessionsStatusFilter(nextFilter);
+    },
+    []
+  );
 
   const handleReopenSession = (sessionId: string) => {
     setOpeningSessionId(sessionId);
@@ -812,6 +836,14 @@ export function DashboardTabsPage() {
   const canGoToNextSessionsPage = sessionsHasNextPage && !isLoadingSessions;
   const canGoToPrevJournalsPage = journalsPage > 1 && !isLoadingJournals;
   const canGoToNextJournalsPage = journalsHasNextPage && !isLoadingJournals;
+  const sessionsStatusOptions = useMemo(
+    () => [
+      { value: "all", label: t("trades.sessions.filters.all") },
+      { value: "completed", label: t("trades.sessions.filters.completed") },
+      { value: "active", label: t("trades.sessions.filters.active") },
+    ],
+    [t]
+  );
   const replaySidebarItems = [
     {
       key: "chart" as const,
@@ -905,12 +937,29 @@ export function DashboardTabsPage() {
                   <p className="text-primary-200">{t("trades.sessions.description")}</p>
                 </div>
 
-                <Button type="button" variant="light" size="sm" className="min-w-40" onClick={handleOpenModal}>
-                  <span className="inline-flex items-center gap-2">
-                    <PlusIcon size={16} weight="bold" />
-                    {t("trades.newSession.button")}
-                  </span>
-                </Button>
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
+                  <div className="w-full sm:min-w-40">
+                    <SelectField
+                      compact
+                      label={t("trades.sessions.filters.label")}
+                      value={sessionsStatusFilter}
+                      options={sessionsStatusOptions}
+                      className="h-9 rounded-xl px-3 py-1.5 text-xs"
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        if (!isSessionsStatusFilter(nextValue)) return;
+                        handleSessionsStatusFilterChange(nextValue);
+                      }}
+                    />
+                  </div>
+
+                  <Button type="button" variant="light" size="sm" className="min-w-40" onClick={handleOpenModal}>
+                    <span className="inline-flex items-center gap-2">
+                      <PlusIcon size={16} weight="bold" />
+                      {t("trades.newSession.button")}
+                    </span>
+                  </Button>
+                </div>
               </div>
 
               {statusMessage && (
@@ -1003,7 +1052,7 @@ export function DashboardTabsPage() {
                           type="button"
                           size="sm"
                           variant="secondary"
-                          onClick={() => loadSessionsData(sessionsPage - 1)}
+                          onClick={() => loadSessionsData(sessionsPage - 1, sessionsStatusFilter)}
                           disabled={!canGoToPrevSessionsPage}
                         >
                           {t("trades.sessions.previous")}
@@ -1012,7 +1061,7 @@ export function DashboardTabsPage() {
                           type="button"
                           size="sm"
                           variant="light"
-                          onClick={() => loadSessionsData(sessionsPage + 1)}
+                          onClick={() => loadSessionsData(sessionsPage + 1, sessionsStatusFilter)}
                           disabled={!canGoToNextSessionsPage}
                         >
                           {t("trades.sessions.next")}
@@ -2219,6 +2268,12 @@ function mapSessionFromApi(session: SessionRecordResponse): MarketSessionRecord 
     totalPnl: Number(session.netPnl ?? session.grossPnl ?? 0),
     successRate: Number(session.winRate ?? 0),
   };
+}
+
+function getSessionsApiStatusFilter(filter: SessionsStatusFilter): SessionStatus | undefined {
+  if (filter === "completed") return "COMPLETED";
+  if (filter === "active") return "IN_PROGRESS";
+  return undefined;
 }
 
 function formatMonthLabel(month: string, language: string) {

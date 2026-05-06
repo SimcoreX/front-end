@@ -73,7 +73,8 @@ export function SelectField({ label, options, className, id, compact = false, ..
       {isOpen && (
         <div
           className={cn(
-            "absolute left-0 top-full z-20 w-full min-w-55 border border-[#2E5C8A]/50 bg-[#1B314B] shadow-[0_14px_32px_rgba(0,0,0,0.35)]",
+            "absolute left-0 top-full z-20 w-full border border-[#2E5C8A]/50 bg-[#1B314B] shadow-[0_14px_32px_rgba(0,0,0,0.35)]",
+            compact ? "min-w-0" : "min-w-55",
             compact ? "mt-1 rounded-lg p-1" : "mt-2 rounded-2xl p-2"
           )}
         >

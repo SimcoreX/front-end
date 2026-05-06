@@ -11,8 +11,7 @@
     "passwordLabel": "Senha",
     "passwordPlaceholder": "Sua senha segura",
     "cta": "Entrar",
-    "loading": "Entrando..."
-    ,
+    "loading": "Entrando...",
     "errors": {
       "invalidCredentials": "E-mail ou senha incorretos.",
       "unauthorized": "Sua sessão expirou. Faça login novamente.",
@@ -368,6 +367,12 @@
       "page": "Página {{page}}",
       "previous": "Anterior",
       "next": "Próxima",
+      "filters": {
+        "label": "Status",
+        "all": "Todas",
+        "completed": "Concluídas",
+        "active": "Ativas"
+      },
       "status": {
         "active": "Ativa",
         "completed": "Concluída"

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/classNames";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 type TradesBySymbolChartProps = {
   data: number[];
@@ -12,21 +12,8 @@ type TradesBySymbolChartProps = {
 
 export function TradesBySymbolChart({ data, labels, valueSuffix = "", color = "#1D9BF0" }: TradesBySymbolChartProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-  const [isAnimated, setIsAnimated] = useState(false);
   const max = Math.max(0, ...data);
   const denominator = max <= 0 ? 1 : max;
-  const animationSeed = useMemo(() => `${labels.join("|")}::${data.join("|")}::${valueSuffix}`, [data, labels, valueSuffix]);
-
-  useEffect(() => {
-    setIsAnimated(false);
-    const frame = window.requestAnimationFrame(() => {
-      setIsAnimated(true);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-    };
-  }, [animationSeed]);
 
   const formatValue = (value: number) => (valueSuffix ? `${value}${valueSuffix}` : `${value}`);
 
@@ -60,9 +47,7 @@ export function TradesBySymbolChart({ data, labels, valueSuffix = "", color = "#
                   className="h-full rounded-r-lg"
                   style={{
                     width: `${widthPercent}%`,
-                    transformOrigin: "left",
-                    transform: isAnimated ? "scaleX(1)" : "scaleX(0)",
-                    transition: `transform 650ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 55}ms`,
+                    transition: `width 650ms cubic-bezier(0.2, 0.9, 0.2, 1) ${idx * 55}ms`,
                     backgroundImage: `linear-gradient(to right, ${color}08 0%, ${color}50 40%, ${color}CC 75%, ${color}FF 100%)`,
                     opacity: isHover ? 1 : 0.82,
                     boxShadow: isHover

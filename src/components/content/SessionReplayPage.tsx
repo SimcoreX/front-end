@@ -1,6 +1,7 @@
 "use client";
 
 import { SessionChartCustomizationCard } from "@/components/content/SessionChartCustomizationCard";
+import { PositionBracketsCard } from "@/components/content/PositionBracketsCard";
 import { SessionReplayStatsPanel } from "@/components/content/SessionReplayStatsPanel";
 import {
   SessionTradeExecutionPanel,
@@ -376,8 +377,8 @@ export function SessionReplayPage({ sessionId }: { sessionId: string }) {
   };
 
   return (
-    <div className="fixed inset-0 z-70 flex bg-primary-950">
-      <aside className="relative z-30 flex w-20 shrink-0 flex-col items-center border-r border-black bg-black px-3 py-4">
+    <div className="fixed inset-0 z-70 flex overflow-hidden bg-primary-950">
+      <aside className="relative z-30 flex w-16 shrink-0 flex-col items-center border-r border-black bg-black px-2 py-3 sm:w-20 sm:px-3 sm:py-4">
         <button
           type="button"
           onClick={handleRequestExitReplay}
@@ -390,7 +391,7 @@ export function SessionReplayPage({ sessionId }: { sessionId: string }) {
             alt="Simcorex"
             width={48}
             height={32}
-            className="h-8 w-12 object-contain"
+            className="h-7 w-10 object-contain sm:h-8 sm:w-12"
             priority
           />
         </button>
@@ -405,7 +406,7 @@ export function SessionReplayPage({ sessionId }: { sessionId: string }) {
                 type="button"
                 onClick={() => setActiveReplaySidebarTool(key)}
                 className={cn(
-                  "group relative inline-flex h-11 w-11 items-center justify-center rounded-xl transition",
+                  "group relative inline-flex h-10 w-10 items-center justify-center rounded-xl transition sm:h-11 sm:w-11",
                   isActive ? "text-white" : "text-white/45"
                 )}
                 aria-label={label}
@@ -431,7 +432,7 @@ export function SessionReplayPage({ sessionId }: { sessionId: string }) {
                     />
                   )
                 )}
-                <span className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-120 -translate-y-1/2 whitespace-nowrap rounded-md border border-primary-700/70 bg-primary-950/95 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                <span className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-120 hidden -translate-y-1/2 whitespace-nowrap rounded-md border border-primary-700/70 bg-primary-950/95 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition group-hover:opacity-100 group-focus-visible:opacity-100 md:block">
                   {label}
                 </span>
               </button>
@@ -442,7 +443,7 @@ export function SessionReplayPage({ sessionId }: { sessionId: string }) {
         <button
           type="button"
           onClick={handleRequestExitReplay}
-          className="mt-auto inline-flex h-11 w-11 items-center justify-center rounded-xl border border-primary-700/70 bg-black text-primary-100 transition hover:border-primary-500/70 hover:text-white"
+          className="mt-auto inline-flex h-10 w-10 items-center justify-center rounded-xl border border-primary-700/70 bg-black text-primary-100 transition hover:border-primary-500/70 hover:text-white sm:h-11 sm:w-11"
           aria-label={t("trades.replay.exit")}
           title={t("trades.replay.exit")}
         >
@@ -450,7 +451,7 @@ export function SessionReplayPage({ sessionId }: { sessionId: string }) {
         </button>
       </aside>
 
-      <div className="relative flex-1 bg-[#131722]">
+      <div className="relative min-w-0 flex-1 bg-[#131722]">
         <div className={cn("h-full w-full", activeReplaySidebarTool === "chart" ? "block" : "hidden")}>
           <div className="flex h-full flex-col">
             <SessionRealtimeHeader
@@ -490,16 +491,19 @@ export function SessionReplayPage({ sessionId }: { sessionId: string }) {
 
         <div
           className={cn(
-            "h-full overflow-y-auto bg-[#131722] p-6",
+            "h-full min-w-0 overflow-x-hidden overflow-y-auto bg-[#131722] p-3 sm:p-6",
             activeReplaySidebarTool === "settings" ? "block" : "hidden"
           )}
         >
-          <SessionChartCustomizationCard />
+          <div className="space-y-6">
+            <PositionBracketsCard />
+            <SessionChartCustomizationCard />
+          </div>
         </div>
 
         <div
           className={cn(
-            "h-full overflow-y-auto bg-[#131722] p-6",
+            "h-full min-w-0 overflow-x-hidden overflow-y-auto bg-[#131722] p-3 sm:p-6",
             activeReplaySidebarTool === "stats" ? "block" : "hidden"
           )}
         >
